@@ -177,7 +177,7 @@
           These work just like the play/pause buttons on YouTube or Netflix.
           Notice how they start disabled (grayed out) until a video is loaded.
         -->
-        <p><input type="button" id="play" value="Play" disabled="true" /><input type="button" id="pause" value="Pause" disabled="true" style="display: none;" /></p>
+        <!-- OLD PLAY/PAUSE BUTTONS REMOVED - VIDEO CONTROLLER HANDLES ALL PLAYBACK -->
         <!-- The pause button is hidden initially (display: none) and will be shown when video plays -->
         
         <!-- 
@@ -464,9 +464,6 @@
       VIDEO FRAME EXTRACTION ENGINE
       This is the core engine that breaks videos apart into individual frames.
       Think of it like a machine that can take apart a flip-book and give you each page separately.
-      
-      IMPORTANT NOTE: There's a typo here! "src-=" should be "src=" 
-      This might cause the script to not load properly. In a real project, this would be a bug to fix.
     -->
     <!-- frame extraction js framez.js -->
     <script type="text/javascript" src="dist/framez.js"></script>
@@ -488,12 +485,13 @@
     <script type="text/javascript" src="dist/annotation-manager.js"></script>
     
     <!-- 
-      VIDEO PLAYBACK CONTROLLER
+      VIDEO PLAYBACK CONTROLLER - THE SOLE HANDLER
       This provides professional video player controls with frame-by-frame navigation,
-      timeline scrubbing, and playback speed control.
+      timeline scrubbing, and playback speed control. This is now THE ONLY system
+      that handles video playback in the application.
     -->
-    <!-- video playback controller -->
-    <script type="text/javascript" src="dist/video-controller-enhanced.js"></script>
+    <!-- video playback controller - consolidated version -->
+    <script type="text/javascript" src="dist/video-controller.js"></script>
     
     <!-- 
       ANNOTATION MANAGEMENT SYSTEM
