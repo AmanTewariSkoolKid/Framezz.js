@@ -242,6 +242,12 @@
           this.isReady = true;       // Mark the player as ready for use
 
           playButton.disabled = false; // Enable the play button (user can now click it)
+          
+          // Initialize the video controller with frame information
+          const totalFrames = framesManager.frames.totalFrames();
+          if (totalFrames > 0) {
+            initializeVideoController(totalFrames, config.fps);
+          }
         },
 
         /*
@@ -275,6 +281,9 @@
             if (window.annotationManager) {
               window.annotationManager.setCurrentFrame(frameNumber);
             }
+            
+            // Notify video controller of frame change
+            notifyVideoControllerFrameChange(frameNumber);
           }
         },
 
@@ -377,6 +386,9 @@
           // Display the current frame, then set up the next advancement
           this.drawFrame(this.currentFrame).then(() => {
             this.currentFrame++;     // Move to the next frame
+            
+            // Notify video controller of frame change during playback
+            notifyVideoControllerFrameChange(this.currentFrame);
             
             // Calculate delay until next frame based on FPS and speed settings
             // Formula: 1000ms ÷ (fps × speed) = delay in milliseconds
@@ -2644,3 +2656,133 @@
       window.clearAllAnnotatedObjects = clearAllAnnotatedObjects;
       window.addAnnotatedObjectControls = addAnnotatedObjectControls;
       window.player = player;
+      
+      // Make integration functions globally accessible
+      window.initializeVideoController = initializeVideoController;
+      window.goToFrame = goToFrame;
+      window.notifyVideoControllerFrameChange = notifyVideoControllerFrameChange;
+
+      /*
+        VIDEO CONTROLLER INTEGRATION
+        Connect the video controller with the annotation system
+      */
+      function initializeVideoController(totalFrames, frameRate) {
+        console.log('Initializing video controller integration:', totalFrames, frameRate);
+        if (window.videoController) {
+          window.videoController.initializeVideo(totalFrames, frameRate);
+        }
+      }
+
+      function notifyVideoControllerFrameChange(frameNumber) {
+        if (window.videoController) {
+          window.videoController.notifyFrameChange(frameNumber);
+        }
+      }
+
+      // Enhanced goToFrame function that actually changes the display
+      function goToFrame(frameNumber) {
+        console.log('goToFrame called with:', frameNumber);
+        
+        // Update global frame variable
+        if (typeof currentFrame !== 'undefined') {
+          currentFrame = frameNumber;
+        }
+        
+        // Update existing jQuery slider if it exists
+        if (typeof $ !== 'undefined' && $('#slider').length) {
+          const slider = $('#slider');
+          if (slider.slider) {
+            slider.slider('value', frameNumber);
+            // Trigger the slide event to update the display
+            slider.trigger('slide', [null, { value: frameNumber }]);
+          }
+        }
+        
+        // Try to call the player's seek function
+        if (typeof player !== 'undefined' && player.seek) {
+          player.seek(frameNumber);
+        }
+        
+        // Update canvas display if drawFrame function exists
+        if (typeof drawFrame === 'function') {
+          drawFrame(frameNumber);
+        }
+        
+        // Update annotation visibility
+        if (window.annotationManager) {
+          window.annotationManager.currentFrameNumber = frameNumber;
+          window.annotationManager.updateAnnotationVisibilityStates();
+        }
+        
+        // Notify video controller
+        notifyVideoControllerFrameChange(frameNumber);
+        
+        console.log('Frame updated to:', frameNumber);
+      }
+
+      // Hook into the existing ready function to initialize video controller
+      const originalReady = typeof ready === 'function' ? ready : function() {};
+      function ready() {
+        console.log('Enhanced ready function called');
+        
+        // Call original ready function
+        originalReady();
+        
+        // Initialize video controller when player is ready
+        setTimeout(() => {
+          // Try to get frame count from various sources
+          let frameCount = 0;
+          
+          if (typeof frames !== 'undefined' && frames.length) {
+            frameCount = frames.length;
+          } else if (typeof framesManager !== 'undefined' && framesManager.frames) {
+            frameCount = framesManager.frames.totalFrames();
+          } else if (typeof $('#slider').slider === 'function') {
+            frameCount = $('#slider').slider('option', 'max') + 1;
+          } else if (typeof totalFrames !== 'undefined') {
+            frameCount = totalFrames;
+          }
+          
+          if (frameCount > 0) {
+            console.log('Auto-initializing video controller with', frameCount, 'frames');
+            initializeVideoController(frameCount, 30);
+          }
+        }, 1000);
+      }
+
+      // Hook into slider events to sync with video controller
+      $(document).ready(function() {
+        // Wait for slider to be created
+        setTimeout(() => {
+          const slider = $('#slider');
+          if (slider.length && slider.slider) {
+            console.log('Hooking into existing slider events');
+            
+            // Override the existing slide event
+            const existingSlideHandler = slider.data('ui-slider');
+            if (existingSlideHandler) {
+              slider.off('slide').on('slide', function(event, ui) {
+                console.log('Slider slide event:', ui.value);
+                
+                // Update video controller
+                if (window.videoController) {
+                  window.videoController.currentFrame = ui.value;
+                  window.videoController.updateDisplay();
+                }
+                
+                // Update annotation visibility
+                if (window.annotationManager) {
+                  window.annotationManager.currentFrameNumber = ui.value;
+                  window.annotationManager.updateAnnotationVisibilityStates();
+                }
+              });
+            }
+          }
+        }, 2000);
+      });
+
+      // Export functions globally
+      window.initializeVideoController = initializeVideoController;
+      window.goToFrame = goToFrame;
+      window.notifyVideoControllerFrameChange = notifyVideoControllerFrameChange;
+      window.ready = ready;
