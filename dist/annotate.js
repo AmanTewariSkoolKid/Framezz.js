@@ -139,7 +139,7 @@
           - max: The last frame number (total frames - 1)
           - onChange: Function to call when user moves the slider
           
-          Think of it like calibrating a speedometer in a car - you need to tell it
+          Think of this like calibrating a speedometer in a car - you need to tell it
           what the minimum and maximum speeds are, and what to do when the needle moves.
         */
         init: function(min, max, onChange) {
@@ -747,15 +747,13 @@
       function extractionFileUploaded() {
         /*
           SAFETY CHECK - ENSURE ONE FILE SELECTED
+          
+          Make sure the user actually selected a file. The files array might be empty
+          if the user opened the file dialog but then cancelled without selecting anything.
         */
         if (this.files.length != 1) {
-          console.log('extractionFileUploaded: No file selected or multiple files selected');
           return; // Exit early if no file or multiple files selected
         }
-
-        console.log('extractionFileUploaded: Starting file processing for:', this.files[0].name);
-        console.log('extractionFileUploaded: File type:', this.files[0].type);
-        console.log('extractionFileUploaded: File size:', this.files[0].size, 'bytes');
 
         /*
           DISABLE ALL CONTROLS - PREVENT USER INTERFERENCE
@@ -802,8 +800,13 @@
         if (this == videoFile) {
           /*
             VIDEO FILE PROCESSING BRANCH
+            
+            When processing a video file, we need to:
+            1. Extract individual frames from the video
+            2. Show progress to the user
+            3. Display preview frames as they're processed
+            4. Handle dimension detection
           */
-          console.log('extractionFileUploaded: Processing video file extraction');
           let dimensionsInitialized = false; // Flag to track if we've set up canvas dimensions
 
           promise = extractFramesFromVideo(
@@ -811,20 +814,25 @@
             this.files[0],    // The selected video file
             /*
               PROGRESS CALLBACK FUNCTION
+              
+              This function is called repeatedly during extraction to show progress.
+              It receives information about how much work is done and the latest frame.
+              
+              Think of it like a construction foreman calling you every hour to say
+              "We're 25% done, and here's a photo of the current progress."
             */
             (percentage, framesSoFar, lastFrameBlob) => {
-              console.log('Video extraction progress:', (percentage * 100).toFixed(2) + '%', 'Frames:', framesSoFar);
-              
               // Convert the latest frame blob to an image we can display
               blobToImage(lastFrameBlob).then((img) => {
-                console.log('Progress frame converted to image:', img.width + 'x' + img.height);
-                
                 /*
                   FIRST FRAME DIMENSION SETUP
+                  
+                  When we get the first frame, we use it to set up the canvas dimensions.
+                  We only do this once (hence the flag) because all frames should have
+                  the same dimensions.
                 */
                 if (!dimensionsInitialized) {
                   dimensionsInitialized = true;
-                  console.log('Video dimensions initialized:', img.width + 'x' + img.height);
                   initializeCanvasDimensions(img); // Set up canvas to match video size
                 }
                 
@@ -832,18 +840,21 @@
 
                 /*
                   UPDATE PROGRESS DISPLAYS
+                  
+                  Show the user how the extraction is progressing with both text updates.
+                  This keeps them informed and prevents them from thinking the app is frozen.
                 */
                 videoDimensionsElement.innerHTML = 'Video dimensions determined: ' + img.width + 'x' + img.height;
                 extractionProgressElement.innerHTML = (percentage * 100).toFixed(2) + ' % completed. ' + framesSoFar + ' frames extracted.';
-              }).catch((error) => {
-                console.error('Error converting progress frame to image:', error);
               });
             });
         } else {
           /*
             ZIP FILE PROCESSING BRANCH
+            
+            When processing a ZIP file, the frames are already extracted, so we just
+            need to read them from the archive. This is much faster than video extraction.
           */
-          console.log('extractionFileUploaded: Processing ZIP file extraction');
           promise = extractFramesFromZip(config, this.files[0]);
         }
 
@@ -1712,19 +1723,6 @@
                 The format is: top-left, bottom-left, bottom-right, top-right
                 This creates a clockwise path around the object's boundary.
               */
-            let bbox = annotatedFrame.bbox; // Get the bounding box for this frame
-            
-            if (bbox != null) {
-              /*
-                OBJECT IS VISIBLE - RECORD ITS POSITION
-                
-                When the object is visible in this frame, record its position as
-                a four-point polygon. We convert the bounding box (x, y, width, height)
-                into four corner coordinates.
-                
-                The format is: top-left, bottom-left, bottom-right, top-right
-                This creates a clockwise path around the object's boundary.
-              */
               let isGroundThrugh = annotatedFrame.isGroundTruth ? 1 : 0; // Convert boolean to number
 
               xml += '    '; // Indentation for readability
@@ -1977,7 +1975,7 @@
                 record this gap so the system knows the object was hidden.
                 
                 For example, if we processed frame 5 and now we're at frame 10,
-                we need to mark the object as invisible from frame 6 to 9.
+                we need to record that the object was invisible from frame 6 to 9.
               */
               if (lastFrame + 1 != frameNumber) {
                 // Create an "invisible" annotation frame for the gap period
@@ -2052,37 +2050,124 @@
         The function returns whether to "preventDefault" - this tells the browser
         whether to block the normal action of the key (like spacebar scrolling the page).
       */
-      /*
-        SIMPLIFIED KEYBOARD SHORTCUTS - ONLY ANNOTATION FUNCTIONS
-        Video controller now handles all playback shortcuts
-      */
       window.onkeydown = function(e) {
-        let preventDefault = true;
+        let preventDefault = true; // Assume we'll handle the key and block browser default
 
-        if (e.keyCode === 78) { // N KEY - NEW ANNOTATION MODE
+        if (e.keyCode === 32) { // SPACEBAR - PLAY/PAUSE TOGGLE
+          /*
+            SPACEBAR - THE UNIVERSAL PLAY/PAUSE KEY
+            
+            This is the most common video player shortcut. Every video player
+            (YouTube, Netflix, VLC, etc.) uses spacebar for play/pause.
+            
+            Why spacebar?
+            1. Large key that's easy to hit without looking
+            2. Central location accessible to either hand
+            3. Universal convention across all video software
+            4. Natural "stop/go" feeling
+          */
+          player.toogle(); // Note: "toogle" is a typo in original code, should be "toggle"
+        } else if (e.keyCode === 78) { // N KEY - NEW ANNOTATION MODE
           /*
             N KEY - ENTER ANNOTATION CREATION MODE
             
             Pressing 'N' (for "New") switches the cursor to crosshair mode, indicating
             the user can now click and drag to create a new bounding box annotation.
+            
+            Why 'N' key?
+            1. 'N' for "New annotation"
+            2. Easy to remember mnemonic
+            3. Left hand position (keeps right hand free for mouse)
+            4. Not used by browser for other functions
+            
+            After pressing 'N', the user can:
+            1. Click once to start drawing a box
+            2. Drag to size the box  
+            3. Click again to finish the box
           */
-          doodle.style.cursor = 'crosshair';
+          doodle.style.cursor = 'crosshair'; // Change cursor to indicate annotation mode
         } else if (e.keyCode === 27) { // ESCAPE KEY - CANCEL CURRENT ACTION
           /*
             ESCAPE KEY - THE UNIVERSAL CANCEL KEY
             
-            Escape cancels any annotation currently being drawn and returns to normal state.
+            Escape is the standard "get me out of here" key in almost all software.
+            It cancels whatever action is currently in progress and returns to normal state.
+            
+            In annotation mode, Escape:
+            1. Cancels any box currently being drawn (removes it completely)
+            2. Returns cursor to normal mode (exits annotation creation)
+            3. Clears any temporary state
+            
+            This gives users a safe "oops, I didn't mean to do that" option.
           */
           if (tmpAnnotatedObject != null) {
-            doodle.removeChild(tmpAnnotatedObject.dom);
-            tmpAnnotatedObject = null;
+            /*
+              CLEAN UP INCOMPLETE ANNOTATION
+              
+              If the user was in the middle of drawing a bounding box, remove it
+              completely and clean up. This is like erasing a pencil sketch that
+              you decided you don't want.
+            */
+            doodle.removeChild(tmpAnnotatedObject.dom); // Remove the visual element
+            tmpAnnotatedObject = null;                   // Clear the temporary object
           }
-          doodle.style.cursor = 'default';
+
+          doodle.style.cursor = 'default'; // Return to normal cursor
+        } else if (e.keyCode == 37) { // LEFT ARROW - PREVIOUS FRAME
+          /*
+            LEFT ARROW - STEP BACKWARD ONE FRAME
+            
+            This allows frame-by-frame navigation backward through the video.
+            Think of it like the "previous page" function when reading a book.
+            
+            Why left arrow?
+            1. Intuitive direction (left = backward in time)
+            2. Standard convention in video editing software
+            3. Natural position for repeated use
+            4. Matches right arrow for forward
+            
+            This is essential for precise annotation work where you need to see
+            exactly how objects move between individual frames.
+          */
+          player.seek(player.currentFrame - 1); // Go to the previous frame
+        } else if (e.keyCode == 39) { // RIGHT ARROW - NEXT FRAME
+          /*
+            RIGHT ARROW - STEP FORWARD ONE FRAME
+            
+            This allows frame-by-frame navigation forward through the video.
+            Think of it like the "next page" function when reading a book.
+            
+            Why right arrow?
+            1. Intuitive direction (right = forward in time)
+            2. Standard convention in video editing software
+            3. Natural position for repeated use
+            4. Matches left arrow for backward
+            
+            Combined with left arrow, this gives precise frame-level control
+            for detailed annotation work.
+          */
+          player.seek(player.currentFrame + 1); // Go to the next frame
         } else {
-          // Let video controller handle all other keys (spacebar, arrows, etc.)
+          /*
+            UNHANDLED KEY - LET BROWSER HANDLE IT
+            
+            If the pressed key isn't one of our shortcuts, we don't want to
+            interfere with it. Set preventDefault to false so the browser
+            can handle the key normally (typing in text fields, etc.).
+          */
           preventDefault = false;
         }
 
+        /*
+          PREVENT DEFAULT BROWSER ACTION (IF NEEDED)
+          
+          If we handled the key press, prevent the browser from doing its
+          normal action. For example, spacebar normally scrolls the page,
+          but we want it to play/pause the video instead.
+          
+          This is like telling the browser "I've got this key handled,
+          don't do your usual thing with it."
+        */
         if (preventDefault) {
           e.preventDefault();
         }
@@ -2533,7 +2618,7 @@
               the image to our ZIP archive with a sequential filename.
               
               Filename format: frame_000001.jpg, frame_000002.jpg, etc.
-              The zero-padded ensures files sort correctly in file browsers.
+              The zero-padding ensures files sort correctly in file browsers.
             */
             canvas.toBlob((blob) => {
               // Create zero-padded filename (frame_000001.jpg, frame_000002.jpg, etc.)
@@ -2572,17 +2657,11 @@
       window.addAnnotatedObjectControls = addAnnotatedObjectControls;
       window.player = player;
       
-      // Make integration functions globally accessible
-      window.initializeVideoController = initializeVideoController;
-      window.goToFrame = goToFrame;
-      window.notifyVideoControllerFrameChange = notifyVideoControllerFrameChange;
-
       /*
         VIDEO CONTROLLER INTEGRATION
         Connect the video controller with the annotation system
       */
       function initializeVideoController(totalFrames, frameRate) {
-        console.log('Initializing video controller integration:', totalFrames, frameRate);
         if (window.videoController) {
           window.videoController.initializeVideo(totalFrames, frameRate);
         }
@@ -2594,87 +2673,22 @@
         }
       }
 
-      // FIXED: Enhanced goToFrame function that works with video controller
       function goToFrame(frameNumber) {
-        console.log('goToFrame called with:', frameNumber);
-        
-        // Prevent infinite loops by checking if we're already at this frame
-        if (player.currentFrame === frameNumber) {
-          return;
+        // Use the existing player goToFrame function
+        if (player && player.goToFrame) {
+          player.goToFrame(frameNumber);
         }
         
-        // Use the existing player's seek function - this is the primary method
-        if (typeof player !== 'undefined' && player.seek) {
-          player.seek(frameNumber);
-          return; // Let the player handle everything
-        }
-        
-        // Fallback methods only if player.seek doesn't exist
-        console.log('Player.seek not available, using fallback methods');
-        
-        // Update global frame variable
-        if (typeof currentFrame !== 'undefined') {
-          currentFrame = frameNumber;
-        }
-        
-        // Update existing jQuery slider if it exists
-        if (typeof $ !== 'undefined' && $('#slider').length) {
-          const slider = $('#slider');
-          if (slider.slider) {
-            slider.slider('value', frameNumber);
-          }
-        }
+        // Notify the video controller
+        notifyVideoControllerFrameChange(frameNumber);
         
         // Update annotation visibility
         if (window.annotationManager) {
-          window.annotationManager.currentFrameNumber = frameNumber;
-          window.annotationManager.updateAnnotationVisibilityStates();
+          window.annotationManager.setCurrentFrame(frameNumber);
         }
-        
-        // Notify video controller LAST to prevent conflicts
-        if (window.videoController && window.videoController.totalFrames > 0) {
-          window.videoController.notifyFrameChange(frameNumber);
-        }
-        
-        console.log('Frame updated to:', frameNumber);
       }
 
-      // Hook into the existing ready function to initialize video controller
-      const originalReady = typeof ready === 'function' ? ready : function() {};
-      function ready() {
-        console.log('Enhanced ready function called');
-        
-        // Call original ready function
-        originalReady();
-        
-        // Initialize video controller when player is ready
-        setTimeout(() => {
-          // Try to get frame count from various sources
-          let frameCount = 0;
-          
-          if (typeof frames !== 'undefined' && frames.length) {
-            frameCount = frames.length;
-          } else if (typeof framesManager !== 'undefined' && framesManager.frames) {
-            frameCount = framesManager.frames.totalFrames();
-          } else if (typeof $('#slider').slider === 'function') {
-            frameCount = $('#slider').slider('option', 'max') + 1;
-          } else if (typeof totalFrames !== 'undefined') {
-            frameCount = totalFrames;
-          }
-          
-          if (frameCount > 0) {
-            console.log('Auto-initializing video controller with', frameCount, 'frames');
-            initializeVideoController(frameCount, 30);
-          }
-        }, 1000);
-      }
-
-      // REMOVED: Problematic jQuery slider event override
-      // This was causing conflicts with the existing player slider management
-      // The video controller now handles its own timeline slider separately
-
-      // Export functions globally
+      // Make integration functions globally accessible
       window.initializeVideoController = initializeVideoController;
       window.goToFrame = goToFrame;
       window.notifyVideoControllerFrameChange = notifyVideoControllerFrameChange;
-      window.ready = ready;

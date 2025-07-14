@@ -1,73 +1,57 @@
 /*
-  VIDEO-CONTROLLER.JS - THE SOLE PLAYBACK CONTROLLER
-  This is now the ONLY system that handles video playback
+  VIDEO-CONTROLLER.JS - ENHANCED VIDEO PLAYBACK CONTROLS
+  
+  This file provides professional video player controls with frame-by-frame navigation,
+  timeline scrubbing, and playback speed control. Think of it like creating a mini
+  video editing interface similar to YouTube or professional video software.
+  
+  Features:
+  - Frame-by-frame navigation (forward/backward)
+  - Jump controls (skip to start/end, multi-frame steps)
+  - Timeline slider with frame display
+  - Playback speed control
+  - Loop functionality
+  - Keyboard shortcuts
 */
 
 "use strict";
 
+/*
+  VIDEO CONTROLLER CLASS
+  Manages all video playback functionality
+*/
 class VideoController {
   constructor() {
     // Video state
     this.isPlaying = false;
     this.currentFrame = 0;
     this.totalFrames = 0;
-    this.frameRate = 30;
+    this.frameRate = 30; // Default frame rate
     this.playbackSpeed = 1.0;
     this.isLooping = false;
     this.playbackInterval = null;
     
     // DOM elements
+    this.slider = null;
     this.currentFrameDisplay = document.getElementById('currentFrameDisplay');
     this.timeDisplay = document.getElementById('timeDisplay');
     this.playPauseBtn = document.getElementById('playPauseBtn');
     this.speedInput = document.getElementById('speed');
     this.loopCheckbox = document.getElementById('loopPlayback');
     this.frameStepSelect = document.getElementById('frameStep');
-    this.timelineSlider = document.getElementById('timelineSlider');
     
-    // Safety flags to prevent initialization conflicts
-    this.isInitializing = false;
-    this.initializationAttempts = 0;
-    this.maxInitializationAttempts = 5;
-    
+    // Initialize the controller
     this.initialize();
   }
   
   /*
-    INITIALIZATION - THE SOLE CONTROLLER
-    This is now the ONLY system that handles video playback
+    INITIALIZATION
+    Set up all event listeners and UI components
   */
   initialize() {
-    // Prevent multiple initialization attempts
-    if (this.isInitializing || this.initializationAttempts >= this.maxInitializationAttempts) {
-      console.log("VideoController: Skipping initialization - already in progress or max attempts reached");
-      return;
-    }
-    
-    this.isInitializing = true;
-    this.initializationAttempts++;
-    
-    try {
-      console.log('VideoController: Initializing THE SOLE playback controller...');
-      
-      // Setup buttons with error checking
-      this.setupButtons();
-      
-      // Setup timeline slider
-      this.setupTimelineSlider();
-      
-      // Setup event listeners
-      this.setupEventListeners();
-      
-      // Initialize keyboard shortcuts
-      this.setupKeyboardShortcuts();
-      
-      this.isInitializing = false;
-      console.log('VideoController: Initialization complete - This is now THE ONLY playback handler');
-    } catch (error) {
-      console.error('VideoController: Error during initialization:', error);
-      this.isInitializing = false;
-    }
+    this.setupEventListeners();
+    this.setupSlider();
+    this.updateDisplay();
   }
   
   /*
@@ -236,33 +220,24 @@ class VideoController {
     this.seekToFrame(this.currentFrame + steps);
   }
   
-  /*
-    FRAME NAVIGATION - DEFENSIVE LOGIC FOR FRAME EXTRACTION
-  */
   seekToFrame(frameNumber) {
     // Clamp to valid range
     frameNumber = Math.max(0, Math.min(this.totalFrames - 1, frameNumber));
-
+    
     if (frameNumber === this.currentFrame) return;
-
+    
     this.currentFrame = frameNumber;
-
-    try {
-      // Update the actual video frame using the existing player system
-      if (typeof window.player !== 'undefined' && window.player.goToFrame) {
-        window.player.goToFrame(frameNumber);
-      } else if (typeof goToFrame === 'function') {
-        goToFrame(frameNumber);
-      } else if (typeof setCurrentFrame === 'function') {
-        setCurrentFrame(frameNumber);
-      } else {
-        console.warn('No valid frame update method found');
-      }
-
-      this.updateDisplay();
-    } catch (error) {
-      console.error('Error during frame navigation:', error);
+    
+    // Update the actual video frame using the existing player system
+    if (typeof window.player !== 'undefined' && window.player.goToFrame) {
+      window.player.goToFrame(frameNumber);
+    } else if (typeof goToFrame === 'function') {
+      goToFrame(frameNumber);
+    } else if (typeof setCurrentFrame === 'function') {
+      setCurrentFrame(frameNumber);
     }
+    
+    this.updateDisplay();
   }
   
   seekToPercent(percent) {
@@ -310,88 +285,142 @@ class VideoController {
     Call this when a video is loaded
   */
   initializeVideo(totalFrames, frameRate = 30) {
-    if (!totalFrames || totalFrames <= 0) {
-      console.warn('Invalid frame count, skipping video controller initialization');
-      return;
-    }
-
     this.totalFrames = totalFrames;
     this.frameRate = frameRate;
     this.currentFrame = 0;
-
+    
     console.log('Video controller initialized with', totalFrames, 'frames at', frameRate, 'fps');
-
-    try {
-      // Enable all controls
-      const buttons = ['skipToStart', 'back10Frames', 'back1Frame', 'playPauseBtn', 'forward1Frame', 'forward10Frames', 'skipToEnd'];
-      buttons.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-          btn.disabled = false;
-        }
-      });
-    } catch (error) {
-      console.error('Error during video initialization:', error);
+    
+    // Enable all controls
+    const buttons = ['skipToStart', 'back10Frames', 'back1Frame', 'playPauseBtn', 'forward1Frame', 'forward10Frames', 'skipToEnd'];
+    buttons.forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.disabled = false;
+    });
+    
+    // Update slider range
+    if (this.slider && this.slider.slider) {
+      this.slider.slider('option', 'max', totalFrames - 1);
     }
+    
+    this.updateDisplay();
+  }
+  
+  /*
+    DISPLAY UPDATES
+  */
+  updateDisplay() {
+    // Update frame counter
+    if (this.currentFrameDisplay) {
+      this.currentFrameDisplay.textContent = `Frame: ${this.currentFrame + 1} / ${this.totalFrames}`;
+    }
+    
+    // Update time display
+    if (this.timeDisplay) {
+      const currentTime = this.currentFrame / this.frameRate;
+      const totalTime = this.totalFrames / this.frameRate;
+      this.timeDisplay.textContent = `${this.formatTime(currentTime)} / ${this.formatTime(totalTime)}`;
+    }
+    
+    // Update slider position
+    if (this.totalFrames > 0) {
+      const percent = (this.currentFrame / (this.totalFrames - 1)) * 100;
+      
+      if (this.slider && this.slider.slider) {
+        this.slider.slider('value', percent);
+      } else {
+        // Update custom slider
+        const thumb = document.getElementById('sliderThumb');
+        if (thumb) {
+          thumb.style.left = `calc(${percent}% - 10px)`;
+        }
+      }
+    }
+  }
+  
+  /*
+    UTILITY FUNCTIONS
+  */
+  formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toFixed(2).padStart(5, '0')}`;
   }
   
   /*
     KEYBOARD SHORTCUTS
-    Define and manage keyboard shortcuts for playback control
   */
-  setupKeyboardShortcuts() {
-    // Example: Toggle play/pause with spacebar
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
+  handleKeyboard(event) {
+    // Don't handle keyboard if user is typing in an input
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+    
+    switch (event.code) {
+      case 'Space':
+        event.preventDefault();
         this.togglePlayPause();
-      }
-    });
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        this.stepFrames(event.shiftKey ? -this.getStepSize() : -1);
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        this.stepFrames(event.shiftKey ? this.getStepSize() : 1);
+        break;
+      case 'Home':
+        event.preventDefault();
+        this.skipToStart();
+        break;
+      case 'End':
+        event.preventDefault();
+        this.skipToEnd();
+        break;
+    }
   }
   
   /*
-    UPDATE DISPLAY
-    Update the current frame and time displays
+    EXTERNAL INTEGRATION
+    Methods to be called from other parts of the application
   */
-  updateDisplay() {
-    if (this.currentFrameDisplay) {
-      this.currentFrameDisplay.innerText = `Frame: ${this.currentFrame + 1} / ${this.totalFrames}`;
-    }
-    if (this.timeDisplay) {
-      const currentTime = (this.currentFrame / this.frameRate) || 0;
-      this.timeDisplay.innerText = `Time: ${currentTime.toFixed(2)} s`;
+  notifyFrameChange(frameNumber) {
+    if (frameNumber !== this.currentFrame) {
+      this.currentFrame = frameNumber;
+      this.updateDisplay();
     }
   }
   
-  /*
-    SETUP BUTTONS
-    Initialize button states and actions
-  */
-  setupButtons() {
-    // Disable all buttons initially
+  reset() {
+    this.pause();
+    this.currentFrame = 0;
+    this.totalFrames = 0;
+    this.updateDisplay();
+    
+    // Disable all controls
     const buttons = ['skipToStart', 'back10Frames', 'back1Frame', 'playPauseBtn', 'forward1Frame', 'forward10Frames', 'skipToEnd'];
     buttons.forEach(id => {
       const btn = document.getElementById(id);
-      if (btn) {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-      }
+      if (btn) btn.disabled = true;
     });
-    
-    // Enable play/pause button immediately
-    if (this.playPauseBtn) {
-      this.playPauseBtn.disabled = false;
-      this.playPauseBtn.style.opacity = '1.0';
-    }
   }
 }
 
 /*
-  GLOBAL VIDEO CONTROLLER INSTANCE
-  Ensure only one instance exists and is used across the application
+  GLOBAL INITIALIZATION
+  Create the global video controller instance
 */
-if (typeof window.videoController === 'undefined') {
-  window.videoController = new VideoController();
-} else {
-  console.warn('VideoController instance already exists:', window.videoController);
+let videoController;
+
+// Initialize when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  videoController = new VideoController();
+  
+  // Make it globally accessible
+  window.videoController = videoController;
+  
+  console.log('Video controller loaded and ready');
+});
+
+// Export for use in other scripts
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = VideoController;
 }

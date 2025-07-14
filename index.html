@@ -177,7 +177,7 @@
           These work just like the play/pause buttons on YouTube or Netflix.
           Notice how they start disabled (grayed out) until a video is loaded.
         -->
-        <!-- OLD PLAY/PAUSE BUTTONS REMOVED - VIDEO CONTROLLER HANDLES ALL PLAYBACK -->
+        <p><input type="button" id="play" value="Play" disabled="true" /><input type="button" id="pause" value="Pause" disabled="true" style="display: none;" /></p>
         <!-- The pause button is hidden initially (display: none) and will be shown when video plays -->
         
         <!-- 
@@ -220,7 +220,6 @@
               <span id="timeDisplay" style="padding: 2px 8px; background: #e0e0e0; border-radius: 3px; font-family: monospace;">00:00.00 / 00:00.00</span>
             </div>
             <div id="slider" style="height: 20px; background: #ddd; border-radius: 10px; position: relative; cursor: pointer;"></div>
-            <input type="range" id="timelineSlider" min="0" max="100" value="0" style="width: 100%; height: 20px; background: #ddd; border-radius: 10px; outline: none; cursor: pointer; margin-top: 5px;" />
           </div>
           
           <!-- Playback Speed and Additional Controls -->
@@ -464,6 +463,9 @@
       VIDEO FRAME EXTRACTION ENGINE
       This is the core engine that breaks videos apart into individual frames.
       Think of it like a machine that can take apart a flip-book and give you each page separately.
+      
+      IMPORTANT NOTE: There's a typo here! "src-=" should be "src=" 
+      This might cause the script to not load properly. In a real project, this would be a bug to fix.
     -->
     <!-- frame extraction js framez.js -->
     <script type="text/javascript" src="dist/framez.js"></script>
@@ -485,12 +487,11 @@
     <script type="text/javascript" src="dist/annotation-manager.js"></script>
     
     <!-- 
-      VIDEO PLAYBACK CONTROLLER - THE SOLE HANDLER
+      VIDEO PLAYBACK CONTROLLER
       This provides professional video player controls with frame-by-frame navigation,
-      timeline scrubbing, and playback speed control. This is now THE ONLY system
-      that handles video playback in the application.
+      timeline scrubbing, and playback speed control.
     -->
-    <!-- video playback controller - consolidated version -->
+    <!-- video playback controller -->
     <script type="text/javascript" src="dist/video-controller.js"></script>
     
     <!-- 
