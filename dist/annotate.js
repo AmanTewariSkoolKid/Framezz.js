@@ -537,8 +537,9 @@
       */
       function clearAllAnnotatedObjects() {
         // Go through each annotated object and clean it up individually
-        for (let i = 0; i < annotatedObjectsTracker.annotatedObjects.length; i++) {
-          clearAnnotatedObject(i); // Clean up this specific object
+        // We need to work backwards or use while loop since clearAnnotatedObject modifies the array
+        while (annotatedObjectsTracker.annotatedObjects.length > 0) {
+          clearAnnotatedObject(0); // Always remove the first element
         }
       }
 

@@ -336,47 +336,47 @@ class AnnotationManager {
         );
         
         console.log('Found annotation at index:', index);
+        console.log('Total annotations before deletion:', window.annotatedObjectsTracker.annotatedObjects.length);
         
         if (index !== -1) {
-          const annotatedObject = annotationData.annotatedObject;
-          console.log('Removing annotation object:', annotatedObject);
-          
-          // Manual cleanup to ensure everything is removed
-          try {
-            // Remove UI controls if they exist
-            if (annotatedObject.controls) {
-              console.log('Removing controls:', annotatedObject.controls);
-              if (typeof annotatedObject.controls.remove === 'function') {
-                annotatedObject.controls.remove();
-              } else if (annotatedObject.controls.parentNode) {
-                annotatedObject.controls.parentNode.removeChild(annotatedObject.controls);
+          // Use the existing clearAnnotatedObject function to properly remove it
+          if (typeof window.clearAnnotatedObject === 'function') {
+            console.log('Using clearAnnotatedObject function');
+            window.clearAnnotatedObject(index);
+            console.log('Total annotations after deletion:', window.annotatedObjectsTracker.annotatedObjects.length);
+          } else {
+            console.log('clearAnnotatedObject not available, using manual cleanup');
+            // Manual cleanup fallback
+            const annotatedObject = annotationData.annotatedObject;
+            
+            try {
+              // Remove UI controls if they exist
+              if (annotatedObject.controls) {
+                console.log('Removing controls:', annotatedObject.controls);
+                if (typeof annotatedObject.controls.remove === 'function') {
+                  annotatedObject.controls.remove();
+                } else if (annotatedObject.controls.parentNode) {
+                  annotatedObject.controls.parentNode.removeChild(annotatedObject.controls);
+                }
               }
-            }
-            
-            // Remove visual bounding box
-            if (annotatedObject.dom) {
-              console.log('Removing DOM element:', annotatedObject.dom);
-              if (typeof $ !== 'undefined') {
-                $(annotatedObject.dom).remove();
-              } else if (annotatedObject.dom.parentNode) {
-                annotatedObject.dom.parentNode.removeChild(annotatedObject.dom);
+              
+              // Remove visual bounding box
+              if (annotatedObject.dom) {
+                console.log('Removing DOM element:', annotatedObject.dom);
+                if (typeof $ !== 'undefined') {
+                  $(annotatedObject.dom).remove();
+                } else if (annotatedObject.dom.parentNode) {
+                  annotatedObject.dom.parentNode.removeChild(annotatedObject.dom);
+                }
               }
-            }
-            
-            // Remove from tracker array
-            console.log('Removing from tracker array at index:', index);
-            window.annotatedObjectsTracker.annotatedObjects.splice(index, 1);
-            
-            // Force refresh the objects display panel
-            this.refreshObjectsDisplay();
-            
-          } catch (error) {
-            console.error('Error during annotation deletion:', error);
-            
-            // Fallback: try using the global clearAnnotatedObject function
-            if (typeof window.clearAnnotatedObject === 'function') {
-              console.log('Using fallback clearAnnotatedObject function');
-              window.clearAnnotatedObject(index);
+              
+              // Remove from tracker array
+              console.log('Removing from tracker array at index:', index);
+              window.annotatedObjectsTracker.annotatedObjects.splice(index, 1);
+              console.log('Total annotations after manual deletion:', window.annotatedObjectsTracker.annotatedObjects.length);
+              
+            } catch (error) {
+              console.error('Error during manual annotation deletion:', error);
             }
           }
         } else {
@@ -386,11 +386,13 @@ class AnnotationManager {
       
       // Remove from our local storage
       this.annotations.delete(annotationId);
+      console.log('Remaining annotations in manager:', this.annotations.size);
       
       // Remove the card from DOM
       const cardElement = document.querySelector(`[data-annotation-id="${annotationId}"]`);
       if (cardElement) {
         cardElement.remove();
+        console.log('Removed annotation card from DOM');
       }
       
       // Update the no annotations message
@@ -471,7 +473,10 @@ class AnnotationManager {
 */
 
 function toggleAllAnnotationsVisibility(visible) {
+  console.log('Toggling all annotations visibility to:', visible);
+  
   if (window.annotationManager) {
+    // Update our annotation manager's annotations
     window.annotationManager.annotations.forEach((annotationData, id) => {
       annotationData.isVisible = visible;
       
@@ -486,26 +491,86 @@ function toggleAllAnnotationsVisibility(visible) {
         checkbox.checked = visible;
       }
     });
+    
+    // Also update any annotations that might exist in the global tracker but not in our manager
+    if (window.annotatedObjectsTracker && window.annotatedObjectsTracker.annotatedObjects) {
+      window.annotatedObjectsTracker.annotatedObjects.forEach(annotatedObject => {
+        if (annotatedObject.dom) {
+          annotatedObject.dom.style.display = visible ? 'block' : 'none';
+        }
+      });
+    }
   }
 }
 
 function deleteAllAnnotations() {
   if (confirm('Are you sure you want to delete ALL annotations? This cannot be undone.')) {
+    console.log('Starting delete all annotations...');
+    
     if (window.annotationManager) {
-      // Use the global clearAllAnnotatedObjects function to remove from video system
+      // First, use the global clearAllAnnotatedObjects function if available
       if (typeof window.clearAllAnnotatedObjects === 'function') {
+        console.log('Using clearAllAnnotatedObjects function');
         window.clearAllAnnotatedObjects();
+      } else {
+        // Fallback: manually clear each annotation
+        console.log('Manual cleanup of all annotations');
+        
+        if (window.annotatedObjectsTracker && window.annotatedObjectsTracker.annotatedObjects) {
+          // Create a copy of the array since we'll be modifying it
+          const annotationsToDelete = [...window.annotatedObjectsTracker.annotatedObjects];
+          
+          annotationsToDelete.forEach((annotatedObject, index) => {
+            try {
+              // Remove UI controls if they exist
+              if (annotatedObject.controls) {
+                console.log('Removing controls for annotation', index);
+                if (typeof annotatedObject.controls.remove === 'function') {
+                  annotatedObject.controls.remove();
+                } else if (annotatedObject.controls.parentNode) {
+                  annotatedObject.controls.parentNode.removeChild(annotatedObject.controls);
+                }
+              }
+              
+              // Remove visual bounding box
+              if (annotatedObject.dom) {
+                console.log('Removing DOM element for annotation', index);
+                if (typeof $ !== 'undefined') {
+                  $(annotatedObject.dom).remove();
+                } else if (annotatedObject.dom.parentNode) {
+                  annotatedObject.dom.parentNode.removeChild(annotatedObject.dom);
+                }
+              }
+            } catch (error) {
+              console.error('Error removing annotation', index, error);
+            }
+          });
+          
+          // Clear the entire array
+          window.annotatedObjectsTracker.annotatedObjects.length = 0;
+        }
+      }
+      
+      // Clear the objects panel manually
+      const objectsPanel = document.getElementById('objects');
+      if (objectsPanel) {
+        console.log('Clearing objects panel');
+        objectsPanel.innerHTML = '';
       }
       
       // Clear all annotations from our manager
+      console.log('Clearing annotation manager storage');
       window.annotationManager.annotations.clear();
       
-      // Remove all cards
+      // Remove all annotation cards
       const cards = document.querySelectorAll('.annotation-card');
+      console.log('Removing', cards.length, 'annotation cards');
       cards.forEach(card => card.remove());
       
       // Update message
       window.annotationManager.updateNoAnnotationsMessage();
+      
+      console.log('Delete all annotations complete');
     }
   }
 }
