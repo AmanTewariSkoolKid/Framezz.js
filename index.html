@@ -246,6 +246,35 @@
             </p>
           </div>
         </div>
+        
+        <!-- 
+          INDIVIDUAL ANNOTATION MANAGEMENT SECTION
+          This section displays detailed information for each individual annotation created.
+          Each annotation gets its own card showing ID, class, color, comments, and visibility controls.
+          Think of it like a detailed inventory list where each item has its own detailed record card.
+        -->
+        <div id="annotationManagement" style="margin-top: 20px; padding: 15px; border: 2px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+          <h3>Individual Annotations</h3>
+          <p style="margin-bottom: 15px; color: #666; font-style: italic;">
+            Each annotation you create will appear here with detailed controls and information.
+          </p>
+          
+          <!-- Container for all individual annotation cards -->
+          <div id="annotationsList" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 3px; background: white; padding: 10px;">
+            <!-- Individual annotation cards will be dynamically added here by JavaScript -->
+            <div id="noAnnotationsMessage" style="text-align: center; color: #999; padding: 20px; font-style: italic;">
+              No annotations created yet. Create an annotation by pressing 'n' and clicking on the video.
+            </div>
+          </div>
+          
+          <!-- Bulk Actions for Annotations -->
+          <div id="bulkActions" style="margin-top: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 3px; background: #f5f5f5;">
+            <h4 style="margin: 0 0 10px 0;">Bulk Actions:</h4>
+            <input type="button" id="showAllAnnotations" value="Show All" onclick="toggleAllAnnotationsVisibility(true)" style="margin-right: 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;" />
+            <input type="button" id="hideAllAnnotations" value="Hide All" onclick="toggleAllAnnotationsVisibility(false)" style="margin-right: 10px; padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;" />
+            <input type="button" id="deleteAllAnnotations" value="Delete All" onclick="deleteAllAnnotations()" style="padding: 5px 10px; background: #ff9800; color: white; border: none; border-radius: 3px; cursor: pointer;" />
+          </div>
+        </div>
       </li>
       <li>
         <!-- 
@@ -396,6 +425,14 @@
     -->
     <!-- annotation class management -->
     <script type="text/javascript" src="dist/class-manager.js"></script>
+    
+    <!-- 
+      INDIVIDUAL ANNOTATION MANAGEMENT SYSTEM
+      This handles the creation and management of individual annotation cards with detailed controls.
+      Think of it like having a detailed inventory system for each annotation you create.
+    -->
+    <!-- individual annotation management -->
+    <script type="text/javascript" src="dist/annotation-manager.js"></script>
     
     <!-- 
       ANNOTATION MANAGEMENT SYSTEM

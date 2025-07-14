@@ -270,6 +270,11 @@
           if (frameNumber >= 0 && frameNumber < framesManager.frames.totalFrames()) {
             this.drawFrame(frameNumber); // Display the requested frame
             this.currentFrame = frameNumber; // Update our position tracking
+            
+            // Update annotation manager with current frame
+            if (window.annotationManager) {
+              window.annotationManager.setCurrentFrame(frameNumber);
+            }
           }
         },
 
@@ -1214,6 +1219,16 @@
           // Add the object to our tracking system
           annotatedObjectsTracker.annotatedObjects.push(annotatedObject);
           
+          // Create annotation card in the individual annotations UI
+          if (window.annotationManager) {
+            const classInfo = selectedClass ? {
+              name: selectedClass,
+              color: annotatedObject.color
+            } : null;
+            
+            window.annotationManager.createAnnotationCard(annotatedObject, classInfo);
+          }
+          
           // Clear the temporary object (we're done with it)
           tmpAnnotatedObject = null;
 
@@ -1865,6 +1880,16 @@
               annotatedObject.dom.style.borderColor = annotatedObject.color;
             }
             annotatedObjectsTracker.annotatedObjects.push(annotatedObject); // Add to tracking system
+            
+            // Create annotation card in the individual annotations UI for XML-loaded annotation
+            if (window.annotationManager) {
+              const classInfo = className ? {
+                name: className,
+                color: annotatedObject.color
+              } : null;
+              
+              window.annotationManager.createAnnotationCard(annotatedObject, classInfo);
+            }
 
             /*
               MAKE THE ANNOTATION INTERACTIVE
@@ -2253,7 +2278,7 @@
             */
             const a = document.createElement('a'); // Create download link
             a.style.display = 'none';              // Make it invisible
-            a.href = url;                          // Set download URL
+            a.href = url;                         // Set download URL
             a.download = 'annotated-frames.webm';  // Set filename
             document.body.appendChild(a);          // Add to page (required for click)
             a.click();                             // Trigger download
@@ -2611,3 +2636,10 @@
 
         processFrame(0); // Start processing from frame 0
       }
+
+      // Make key functions and variables globally accessible for annotation manager
+      window.annotatedObjectsTracker = annotatedObjectsTracker;
+      window.clearAnnotatedObject = clearAnnotatedObject;
+      window.clearAllAnnotatedObjects = clearAllAnnotatedObjects;
+      window.addAnnotatedObjectControls = addAnnotatedObjectControls;
+      window.player = player;

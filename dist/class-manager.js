@@ -111,6 +111,11 @@ function addNewClass() {
     updateClassDisplay();
     updateClassDropdown();
     
+    // Notify annotation manager to refresh class dropdowns
+    if (window.annotationManager && typeof window.annotationManager.refreshClassDropdowns === 'function') {
+        window.annotationManager.refreshClassDropdowns();
+    }
+    
     // Clear inputs
     classNameInput.value = '';
     classColorInput.value = generateRandomColor();
@@ -304,6 +309,12 @@ function resetToDefaultClasses() {
         annotationClasses = { ...defaultClasses };
         updateClassDisplay();
         updateClassDropdown();
+        
+        // Notify annotation manager to refresh class dropdowns
+        if (window.annotationManager && typeof window.annotationManager.refreshClassDropdowns === 'function') {
+            window.annotationManager.refreshClassDropdowns();
+        }
+        
         console.log('Classes reset to defaults');
     }
 }
@@ -313,6 +324,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Wait a bit to ensure other scripts are loaded
     setTimeout(initializeClassManager, 100);
 });
+
+// Make key functions and variables globally accessible
+window.annotationClasses = annotationClasses;
+window.getCurrentAnnotationClass = getCurrentAnnotationClass;
+window.getClassColor = getClassColor;
+window.getAllClasses = getAllClasses;
+window.resetToDefaultClasses = resetToDefaultClasses;
 
 // Make functions available globally for onclick handlers
 window.removeClass = removeClass;

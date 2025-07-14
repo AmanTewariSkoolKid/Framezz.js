@@ -137,3 +137,150 @@
       #selectedClassPreview {
         border-radius: 3px;
       }
+
+      /* Individual Annotation Management Styling */
+      .annotation-card {
+        border: 3px solid;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+      }
+
+      .annotation-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateY(-1px);
+      }
+
+      .annotation-card.hidden {
+        opacity: 0.5;
+        filter: grayscale(50%);
+      }
+
+      .annotation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+
+      .annotation-id {
+        font-size: 14px;
+        background: rgba(0,0,0,0.1);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: monospace;
+      }
+
+      .annotation-class {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .class-color-indicator {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        display: inline-block;
+      }
+
+      .annotation-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .annotation-field {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .annotation-field label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 2px;
+      }
+
+      .annotation-field input, .annotation-field select, .annotation-field textarea {
+        padding: 4px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+
+      .annotation-field textarea {
+        resize: vertical;
+        min-height: 40px;
+        font-family: Arial, sans-serif;
+      }
+
+      .annotation-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+      }
+
+      .visibility-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .visibility-controls label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .annotation-actions {
+        display: flex;
+        gap: 5px;
+      }
+
+      .annotation-actions button {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: bold;
+      }
+
+      .edit-btn {
+        background: #2196F3;
+        color: white;
+      }
+
+      .edit-btn:hover {
+        background: #1976D2;
+      }
+
+      .delete-btn {
+        background: #f44336;
+        color: white;
+      }
+
+      .delete-btn:hover {
+        background: #d32f2f;
+      }
+
+      .focus-btn {
+        background: #FF9800;
+        color: white;
+      }
+
+      .focus-btn:hover {
+        background: #F57C00;
+      }
