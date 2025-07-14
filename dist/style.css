@@ -1,0 +1,139 @@
+.output { font-family: monospace; font-weight: bold; }
+
+      #doodle {
+        position: relative;
+        width: 0px;
+        height: 0px;
+        z-index: 2;
+      }
+
+      #canvas {
+        z-index: 1;
+      }
+
+      .bbox {
+        border: 1px solid #FF0000;
+        position: absolute;
+        z-index: 3;
+      }
+
+      .handle, .ui-resizable-handle {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 0, 0, .5);
+        background-color: rgba(255, 255, 0, .05);
+        position: absolute;
+      }
+
+      .center-drag {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        cursor: move;
+      }
+
+      .ui-resizable-n {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        cursor: n-resize;
+      }
+
+      .ui-resizable-s {
+        left: 50%;
+        bottom: 0%;
+        transform: translate(-50%, 50%);
+        cursor: s-resize;
+      }
+
+      .ui-resizable-w {
+        top: 50%;
+        transform: translate(-50%, -50%);
+        cursor: w-resize;
+      }
+
+      .ui-resizable-e {
+        right: 0%;
+        top: 50%;
+        transform: translate(50%, -50%);
+        cursor: e-resize;
+      }
+
+      .ui-resizable-se {
+        bottom: 0;
+        right: 0;
+        transform: translate(50%, 50%);
+        cursor: se-resize;
+      }
+
+      /* Class Management Styling */
+      #classManagement {
+        font-family: Arial, sans-serif;
+      }
+
+      #classManagement h3 {
+        margin-top: 0;
+        color: #333;
+      }
+
+      #classManagement h4 {
+        margin-bottom: 10px;
+        color: #555;
+      }
+
+      #classManagement input[type="text"] {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+      }
+
+      #classManagement input[type="color"] {
+        width: 50px;
+        height: 30px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      #classManagement input[type="button"] {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      #addClassButton {
+        background-color: #4CAF50;
+        color: white;
+      }
+
+      #addClassButton:hover {
+        background-color: #45a049;
+      }
+
+      #resetClassesButton:hover {
+        background-color: #ff5555;
+      }
+
+      #classList li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      #classList li button {
+        font-size: 12px;
+      }
+
+      #classList li button:hover {
+        background-color: #ff3333;
+      }
+
+      #annotationClass {
+        font-size: 14px;
+      }
+
+      #selectedClassPreview {
+        border-radius: 3px;
+      }

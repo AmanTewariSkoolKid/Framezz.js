@@ -1,0 +1,409 @@
+<!-- 
+  HTML DOCUMENT DECLARATION AND SETUP
+  
+  Think of this HTML file like a blueprint for a house. Just like a blueprint tells builders
+  what rooms go where and how they connect, this HTML tells the web browser what content
+  to display and how to arrange it on the page.
+  
+  This is a video annotation tool - imagine having a video and being able to draw boxes
+  around objects (like people, cars, etc.) and have the computer remember where those
+  boxes are in each frame. That's what this tool does!
+-->
+
+<!doctype html> <!-- This line tells the browser "Hey, this is modern HTML!" -->
+
+<html lang="en"> <!-- This starts our HTML document and says it's written in English -->
+  <head>
+    <!-- 
+      The HEAD section is like the "behind the scenes" information about our webpage.
+      Users don't see this content directly, but it tells the browser important setup info.
+      Think of it like the ingredients list on a recipe - you need to know what's required
+      before you start cooking!
+    -->
+    
+    <!-- This tells the browser what kind of text encoding to use (UTF-8 handles most languages) -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    
+    <!-- This is what appears in the browser tab at the top of the window -->
+    <title>framez.js  A pure Javascript video annotation tool</title>
+    
+    <!-- This connects our HTML to a CSS file that makes everything look pretty -->
+    <!-- Think of CSS like interior decorating - it makes the basic structure look nice -->
+    <link rel="stylesheet" type="text/css" href="dist/style.css" />
+  </head>
+  <body>
+    <!-- 
+      THE BODY SECTION - This is where all the visible content lives!
+      Everything between <body> and </body> is what users actually see on the webpage.
+      Think of this like the main floor plan of a house - this is where people actually live and interact.
+    -->
+    
+    <!-- The main heading - like putting a big sign on your store that says what it does -->
+    <h1>framez.js  A pure Javascript video annotation tool</h1>
+
+    <!-- 
+      ORDERED LIST - THE STEP-BY-STEP WORKFLOW
+      
+      An <ol> (ordered list) is like a recipe or instruction manual. Each <li> (list item) 
+      is a step that users need to follow in order. The browser automatically numbers them 1, 2, 3, etc.
+      
+      This particular list guides users through the entire process of annotating a video,
+      from start to finish. It's designed to be foolproof - just follow the steps!
+    -->
+    <ol>
+      <li>
+        <!-- 
+          STEP 1: INTRODUCTION TO THE TOOL
+          This first step is like the "welcome mat" of the application. It explains what
+          the tool does and sets expectations for the user. Think of it like reading
+          the back of a box before opening a new game - you want to know what you're getting into!
+        -->
+        <p>framez.js is a pure Javascript video annotation tool, which allows you to annotate videos in your browser.</p>
+        <p>This tool can be used to easily annotate a video, without having to install anything.</p>
+        <p>Optical flow is used to track your annotations, so that have to do as little work as possible ;-)</p>
+        <p>This tool works best in Chrome, and has also been successfully tested in Firefox.</p>
+      </li>
+      <li>
+        <!-- 
+          STEP 2: FILE INPUT SECTION
+          This is where users choose their files. Think of it like choosing ingredients for cooking:
+          - You can either start fresh with a new video (like buying fresh ingredients)
+          - Or you can continue with work you already started (like using leftovers from yesterday)
+          
+          The "input type='file'" creates those "Choose File" buttons you see on websites.
+          The "accept" attribute tells the browser what types of files are allowed - it's like
+          having a bouncer at a club who only lets in certain types of people!
+        -->
+        <p>To start a new video annotation, select a video file: <input type="file" id="videoFile" accept="video/*" /></p> 
+        <!-- The "accept='video/*'" means "accept any type of video file" (MP4, AVI, etc.) -->
+        
+        <p>To resume a previous annotation, select a frames zip archive: <input type="file" id="zipFile" accept=".zip" /></p>
+        <!-- The "accept='.zip'" means only ZIP files are allowed here -->
+        
+        <p>Note: Keep the focus on the browser during the entire extraction process, or frames might be skipped.</p>
+        <!-- This is like saying "don't walk away from the stove while cooking" - stay focused! -->
+        
+        <!-- 
+          These next two paragraphs are "output areas" - they start empty but will be filled
+          with information by JavaScript code later. Think of them like empty picture frames
+          that will have photos put in them later.
+        -->
+        <p class="output" id="videoDimensions"></p> <!-- Will show video size like "1920x1080" -->
+        <p class="output" id="extractionProgress"></p> <!-- Will show progress like "50% complete" -->
+      </li>
+      <li>
+        <!-- 
+          STEP 3: DOWNLOAD EXTRACTED FRAMES
+          After the tool breaks down the video into individual frames (like taking apart
+          a flip-book into separate pages), this button lets you download all those frames
+          as a ZIP file. Think of it like getting a folder full of photos from your video.
+          
+          The "disabled='disabled'" means this button starts "grayed out" and unusable - 
+          it only becomes clickable after the previous steps are completed.
+        -->
+        <p>Download the extracted frames zip archive: <input type="button" id="downloadFrames" value="Get frames zip archive" disabled="disabled" /></p>
+        <!-- This button will become enabled by JavaScript once frame extraction is complete -->
+      </li>
+      <li>
+        <!-- 
+          STEP 4: OPTIONAL ANNOTATION FILE LOADING
+          This is like importing a rough draft of your homework that you want to finish.
+          Sometimes you might already have some automatic annotations (maybe from AI software)
+          or previous work that you want to continue improving.
+          
+          XML is a file format (like .txt or .doc) that stores structured data.
+          Think of it like a very organized filing cabinet where information is stored
+          in a specific, predictable way.
+        -->
+        <p>Optional: Load an existing -compatible XML annotation file: <input type="file" id="xmlFile" accept=".xml" disabled="true" /></p>
+        <!-- This input is also disabled initially and will be enabled by JavaScript later -->
+        
+        <p>This is useful for example if:</p>
+        <ul>
+          <!-- 
+            UNORDERED LIST - This creates bullet points (unlike the numbered list above)
+            Think of this like a shopping list where order doesn't matter
+          -->
+          <li>You are resuming a previous annotation.</li> <!-- Continuing work you started before -->
+          <li>You already have a first version of your automatic object detector, which you want to improve by manually correcting its errors.</li>
+          <!-- Like having a robot assistant that did 80% of the work, but you need to fix its mistakes -->
+        </ul>
+        <p>Note: Launch your object detector on the extracted frames rather than on the original video to avoid frame/annotation mismatches!</p>
+        <!-- This is important technical advice - like making sure you're working with the same ingredients your recipe calls for -->
+      </li>
+      <li>
+        <!-- 
+          STEP 5: THE MAIN ANNOTATION INTERFACE
+          This is the heart of the application - where the actual work happens!
+          Think of this like the main workspace where you'll spend most of your time,
+          similar to how a photo editing program has a main canvas where you do your work.
+        -->
+        <p>Manually annotate the frame sequence:</p>
+        
+        <!-- 
+          INSTRUCTIONS FOR CREATING BOUNDING BOXES
+          A "bounding box" is like drawing a rectangle around an object in the video.
+          Imagine outlining a person or car with a highlighter - that's what this does digitally.
+        -->
+        <p>To create a new bounding box, first click 'n' (for new), and then left click on two locations in the video corresponding to the corners of the box.</p>
+        
+        <!-- 
+          KEYBOARD SHORTCUTS AND TIPS
+          These are like hotkeys in video games - shortcuts that make you work faster.
+          Professional video editors use these kinds of shortcuts all the time.
+        -->
+        <p>Tip: Use the spacebar to play/pause the video, and the left and right arrows to navigate frame by frame.</p>
+        <p>Tip: The visibility of each object can be toggled with its visibility checkbox under the video.</p>
+        <p>Tip: Zoom in with your browser to place the bounding boxes more accurately.</p>
+        
+        <!-- 
+          THE VIDEO CANVAS CONTAINER
+          This div (division/container) will hold the actual video and drawing area.
+          Think of it like a picture frame - it defines the space where the video will appear.
+          The id="doodle" gives it a unique name so JavaScript can find and control it.
+        -->
+        <div id="doodle">
+          <!-- 
+            THE DRAWING CANVAS
+            This is where the magic happens! A canvas is like a digital whiteboard where
+            you can draw, but it's overlaid on top of the video. It's like having
+            transparent paper over a photo that you can draw on.
+          -->
+          <canvas id="canvas"></canvas>
+        </div>
+        
+        <!-- 
+          VIDEO CONTROL BUTTONS
+          These work just like the play/pause buttons on YouTube or Netflix.
+          Notice how they start disabled (grayed out) until a video is loaded.
+        -->
+        <p><input type="button" id="play" value="Play" disabled="true" /><input type="button" id="pause" value="Pause" disabled="true" style="display: none;" /></p>
+        <!-- The pause button is hidden initially (display: none) and will be shown when video plays -->
+        
+        <!-- 
+          VIDEO TIMELINE SLIDER
+          This will become a slider (like a volume control) that lets you scrub through
+          the video timeline. Think of it like the progress bar on YouTube that you can
+          click and drag to jump to different parts of the video.
+        -->
+        <div id="slider"></div>
+        
+        <!-- 
+          PLAYBACK SPEED CONTROL
+          This lets you speed up or slow down the video playback.
+          "1.00" means normal speed, "2.00" would be double speed, "0.50" would be half speed.
+          The "size='4'" means the input box will be 4 characters wide.
+        -->
+        <p><label for="speed">Speed multiplier: </label><input type="text" id="speed" value="1.00" size="4" /></p>
+        
+        <!-- 
+          OBJECTS PANEL
+          This empty div will be populated by JavaScript to show a list of all the objects
+          you've annotated. Think of it like a layers panel in Photoshop - it shows all
+          the different things you're tracking in your video.
+        -->
+        <div id="objects"></div>
+        
+        <!-- 
+          ANNOTATION CLASS MANAGEMENT SECTION
+          This section allows users to create custom annotation classes with unique colors
+          during runtime. Think of it like creating custom labels with different colored
+          highlighters for different types of defects or objects.
+        -->
+        <div id="classManagement" style="margin-top: 20px; padding: 15px; border: 2px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+          <h3>Annotation Class Management</h3>
+          
+          <!-- Create New Class Section -->
+          <div id="classCreation" style="margin-bottom: 15px;">
+            <h4>Create New Class:</h4>
+            <p>
+              <label for="newClassName">Class Name: </label>
+              <input type="text" id="newClassName" placeholder="Enter class name (e.g., cracks, spalling)" style="margin-right: 10px;" />
+              <label for="newClassColor">Color: </label>
+              <input type="color" id="newClassColor" value="#FF0000" style="margin-right: 10px;" />
+              <input type="button" id="addClassButton" value="Add Class" />
+            </p>
+          </div>
+          
+          <!-- Available Classes Display -->
+          <div id="classDisplay">
+            <h4>Available Classes:</h4>
+            <ul id="classList" style="list-style-type: none; padding: 0;"></ul>
+            <p style="margin-top: 10px;">
+              <input type="button" id="resetClassesButton" value="Reset to Defaults" onclick="resetToDefaultClasses()" style="background: #ff6666; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" />
+            </p>
+          </div>
+          
+          <!-- Class Selection for Annotations -->
+          <div id="classSelection" style="margin-top: 15px;">
+            <h4>Select Class for New Annotations:</h4>
+            <p>
+              <label for="annotationClass">Current Class: </label>
+              <select id="annotationClass" style="padding: 5px; margin-right: 10px;">
+                <option value="">Select a class</option>
+              </select>
+              <span id="selectedClassPreview" style="display: inline-block; width: 20px; height: 20px; border: 2px solid #000; margin-left: 10px;"></span>
+            </p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <!-- 
+          STEP 6: GENERATE XML ANNOTATIONS
+          After you've annotated your video (drawn boxes around objects), this step lets you
+          save all that work as an XML file. Think of this like "Save As" in Microsoft Word -
+          you're saving your work in a format that other programs can understand and use.
+          
+          XML (eXtensible Markup Language) is a structured way to store data that both humans
+          and computers can read. It's like a very organized filing system for your annotations.
+        -->
+        <p><input type="button" id="generateXml" value="Generate" disabled="true" /> the -compatible XML annotations file.</p>
+        <!-- This button starts disabled and becomes clickable once you have annotations to save -->
+      </li>
+      <li>
+        <!-- 
+          STEP 7: EXPORT OPTIONS
+          This is like the "final product" section - after you've done all your annotation work,
+          these buttons let you create different types of outputs from your work.
+          
+          Think of it like a restaurant kitchen where you can serve the same meal in different ways:
+          - Export Video: Creates a new video with your boxes drawn on it (like subtitles burned into a movie)
+          - Export Zip: Gives you individual image files with the boxes drawn on them
+        -->
+        <p><input type="button" id="exportVideo" class="export-video-button" value="Export Video" disabled="true" onclick="exportAnnotatedFramesAsVideo()" /> Export annotated frames as video.</p>
+        <!-- onclick="exportAnnotatedFramesAsVideo()" tells the browser what function to run when clicked -->
+        
+        <p><input type="button" id="exportAnnotatedZip" class="export-annotated-zip-button" value="Export Annotated Frames Zip" disabled="true" onclick="exportAnnotatedFramesAsZip()" /> Export frames with bounding boxes as zip.</p>
+        <!-- This creates a ZIP file containing individual frames with your annotations drawn on them -->
+        
+        <!-- 
+          EXPORT PROGRESS INDICATOR
+          This section shows the user how far along the export process is.
+          It's hidden initially (display: none) and only appears when an export is running.
+          Think of it like a progress bar when downloading a file - it keeps you informed!
+        -->
+        <div id="exportProgress" style="display: none;">
+          <!-- 
+            PROGRESS BAR ELEMENT
+            This creates a visual progress bar that fills up as the export progresses.
+            The "value" starts at 0 and "max" is 100, so it shows percentage completion.
+          -->
+          <progress id="exportProgressBar" value="0" max="100"></progress>
+          <!-- This span will show the percentage as text next to the progress bar -->
+          <span id="exportProgressText">0%</span>
+        </div>
+      </li>
+    </ol>
+
+    <!-- 
+      JAVASCRIPT LIBRARY IMPORTS - THE BRAIN OF THE APPLICATION
+      
+      Think of these script tags like calling in different specialists to help with different tasks.
+      Each JavaScript file is like hiring a professional contractor who specializes in one specific job.
+      The order matters here - you need to lay the foundation before you can build the walls!
+      
+      These libraries handle complex tasks so the main application doesn't have to reinvent the wheel.
+      It's like buying pre-made ingredients instead of making everything from scratch.
+    -->
+
+</style>
+    <!-- 
+      COMPATIBILITY LAYER
+      This ensures the app works on older browsers that might not support newer features.
+      Think of it like a translator that speaks both old and new computer languages.
+    -->
+    <!-- compatibility with older versions -->
+    <script type="text/javascript" src="dist/compatibility.js"></script>
+    
+    <!-- 
+      ZIP FILE HANDLING
+      This library knows how to create, read, and extract ZIP files.
+      Like having a friend who's really good at packing and unpacking suitcases efficiently.
+    -->
+    <!-- zip file handling -->
+    <script type="text/javascript" src="dist/jszip.js"></script>
+    
+    <!-- 
+      FILE DOWNLOADING CAPABILITY
+      This enables the browser to let users download files they create.
+      Think of it like a delivery service that can package up your work and send it to you.
+    -->
+    <!-- file downloading ig -->
+    <script type="text/javascript" src="dist/StreamSaver.js"></script>
+    
+    <!-- 
+      MODERN BROWSER FEATURE SUPPORT
+      This adds support for newer features in older browsers.
+      Like adding new apps to an older phone to make it work with modern services.
+    -->
+    <!-- deployment things -->
+    <script type="text/javascript" src="dist/polyfill.js"></script>
+    
+    <!-- 
+      COMPUTER VISION LIBRARY
+      This handles the complex math for tracking objects in video frames.
+      Think of it like having a very smart assistant who's excellent at spotting patterns and following moving objects.
+    -->
+    <!-- known library -->
+    <script type="text/javascript" src="dist/jsfeat.js"></script>
+    
+    <!-- 
+      GEOMETRIC TRANSFORMATION LIBRARY
+      This helps with moving, rotating, and scaling objects accurately.
+      Like having a geometry teacher who can calculate exactly how things should move.
+    -->
+    <script type="text/javascript" src="dist/nudged.js"></script>
+    
+    <!-- 
+      LOCAL DATABASE STORAGE
+      This allows the app to save data locally in the browser.
+      Think of it like having a filing cabinet in your office that remembers your work even if you close the app.
+    -->
+    <script type="text/javascript" src="dist/pouchdb.min.js"></script>
+    
+    <!-- 
+      JQUERY - THE SWISS ARMY KNIFE
+      This is one of the most popular JavaScript libraries that makes it easier to:
+      - Find and modify elements on the webpage
+      - Handle user interactions (clicks, typing, etc.)
+      - Create smooth animations
+      Think of it like having a universal remote control that works with everything on your webpage.
+    -->
+    <script type="text/javascript" src="dist/jquery-1.12.4.js"></script>
+    
+    <!-- 
+      JQUERY UI - USER INTERFACE ENHANCEMENTS
+      This adds fancy interactive widgets like sliders, drag-and-drop, and dialogs.
+      Think of it like upgrading from basic light switches to smart home controls.
+    -->
+    <script type="text/javascript" src="dist/jquery-ui.js"></script>
+    
+    <!-- 
+      VIDEO FRAME EXTRACTION ENGINE
+      This is the core engine that breaks videos apart into individual frames.
+      Think of it like a machine that can take apart a flip-book and give you each page separately.
+      
+      IMPORTANT NOTE: There's a typo here! "src-=" should be "src=" 
+      This might cause the script to not load properly. In a real project, this would be a bug to fix.
+    -->
+    <!-- frame extraction js framez.js -->
+    <script type="text/javascript" src="dist/framez.js"></script>
+    
+    <!-- 
+      ANNOTATION CLASS MANAGEMENT SYSTEM
+      This handles the creation and management of annotation classes with unique colors.
+      Think of it like having a palette of different colored markers for different types of annotations.
+    -->
+    <!-- annotation class management -->
+    <script type="text/javascript" src="dist/class-manager.js"></script>
+    
+    <!-- 
+      ANNOTATION MANAGEMENT SYSTEM
+      This handles all the logic for creating, editing, and tracking the bounding boxes.
+      Think of it like the conductor of an orchestra - it coordinates all the annotation activities.
+    -->
+    <!-- annotation handling annotate.js -->
+    <script type="text/javascript" src="dist/annotate.js"></script>
+
+  </body>
+</html>

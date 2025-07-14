@@ -1,0 +1,227 @@
+# 🎬 FrameAnnotate.js
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![WebM Video](https://img.shields.io/badge/Export-WebM%20Video-red?logo=webm)](https://www.webmproject.org/)
+[![ZIP Archive](https://img.shields.io/badge/Export-ZIP%20Archive-blue?logo=zip)](https://en.wikipedia.org/wiki/ZIP_(file_format))
+
+> A powerful, browser-based video annotation tool with optical flow tracking and multiple export formats. No installation required - runs entirely in your browser!
+
+## ✨ Features
+
+### 🎯 Core Functionality
+- **📹 Video Frame Extraction** - Extract frames from video files at customizable FPS
+- **🎨 Interactive Annotation** - Create bounding boxes with click-and-drag interface
+- **🔄 Optical Flow Tracking** - Automatic object tracking between frames using Lucas-Kanade optical flow
+- **📊 Progress Tracking** - Real-time progress indicators for all operations
+- **💾 Multiple Import/Export Formats** - Support for various file formats
+
+### 🚀 Advanced Features
+- **⚡ Real-time Preview** - Live video playback with annotation overlay
+- **🎛️ Speed Control** - Adjustable playback speed multiplier
+- **👁️ Visibility Toggle** - Show/hide individual annotations
+- **🏷️ Object Labeling** - Name and ID assignment for tracked objects
+- **📤 Dual Export Options** - Export as video or annotated frame ZIP
+
+### 🖱️ User Interface
+- **⌨️ Keyboard Shortcuts** - Spacebar (play/pause), N (new annotation), Arrow keys (frame navigation)
+- **🎯 Precision Tools** - Frame-by-frame navigation and zoom support
+- **📱 Responsive Design** - Works on various screen sizes
+- **🎨 Modern UI** - Clean, intuitive interface with jQuery UI components
+
+## 🛠️ Technical Specifications
+
+### 📋 System Requirements
+- **Browser Compatibility**: Chrome (recommended), Firefox, Safari, Edge
+- **JavaScript**: ES6+ support required
+- **Canvas API**: HTML5 Canvas support
+- **File API**: Modern File API support for video/zip uploads
+- **Memory**: Recommended 4GB+ RAM for large videos
+
+### 🔧 Core Technologies
+- **Frontend**: Pure JavaScript (ES6+), HTML5, CSS3
+- **UI Framework**: jQuery 1.12.4 + jQuery UI
+- **Computer Vision**: JSFeat library for optical flow
+- **Video Processing**: HTML5 Video API with Canvas rendering
+- **Data Storage**: PouchDB for frame caching
+- **File Handling**: JSZip for archive operations
+- **Streaming**: StreamSaver.js for large file downloads
+
+### 📊 Supported Formats
+
+#### 📥 Input Formats
+- **Video Files**: MP4, WebM, AVI, MOV, MKV (any HTML5 video compatible format)
+- **Frame Archives**: ZIP files containing extracted frames
+- **Annotation Data**: XML files (VATIC-compatible format)
+
+#### 📤 Export Formats
+- **Video Export**: WebM format with embedded annotations
+- **Frame Export**: ZIP archive with annotated JPEG frames
+- **Annotation Data**: XML format compatible with VATIC annotation tool
+- **Raw Frames**: ZIP archive of extracted frames without annotations
+
+### ⚙️ Configuration Options
+```javascript
+const config = {
+  fps: 30,                    // Frame extraction rate
+  playbackRate: 0.4,          // Video processing speed
+  imageMimeType: 'image/jpeg', // Frame format
+  imageExtension: '.jpg',      // File extension
+  framesZipFilename: 'extracted-frames.zip'
+};
+```
+
+## 🚀 Quick Start
+
+### 1️⃣ Clone Repository
+```bash
+git clone https://github.com/username/frameannotate.js.git
+cd frameannotate.js/bananananana
+```
+
+### 2️⃣ Open in Browser
+```bash
+# Open index.html in your preferred browser
+# No build process required!
+```
+
+### 3️⃣ Start Annotating
+1. **Upload Video** - Select a video file to extract frames
+2. **Create Annotations** - Press 'N' and click to create bounding boxes
+3. **Track Objects** - Use optical flow to automatically track objects across frames
+4. **Export Results** - Download as video or ZIP archive
+
+## 📖 Usage Guide
+
+### 🎬 Video Processing Workflow
+
+1. **📁 File Upload**
+   ```
+   Select Video File → Frame Extraction → Canvas Initialization
+   ```
+
+2. **🎨 Annotation Creation**
+   ```
+   Press 'N' → Click & Drag → Set Name/ID → Optical Flow Tracking
+   ```
+
+3. **📤 Export Options**
+   ```
+   Annotated Video (WebM) | Annotated Frames (ZIP) | XML Annotations
+   ```
+
+### ⌨️ Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Spacebar` | Play/Pause video |
+| `N` | New annotation mode |
+| `Escape` | Cancel current annotation |
+| `←` / `→` | Previous/Next frame |
+
+### 🎯 Annotation Features
+
+- **Bounding Boxes**: Red rectangular annotations with 2px border
+- **Object Labels**: Display custom names above bounding boxes
+- **Visibility Control**: Toggle individual object visibility
+- **Ground Truth**: Mark annotations as ground truth or tracked
+- **Batch Operations**: Hide all other objects option
+
+## 🏗️ Architecture
+
+### 📁 File Structure
+```
+frameannotate.js/
+├── bananananana/
+│   ├── index.html          # Main application
+│   ├── dist/               # Dependencies
+│   │   ├── jquery-1.12.4.js
+│   │   ├── jquery-ui.js
+│   │   ├── jsfeat.js
+│   │   ├── jszip.js
+│   │   ├── StreamSaver.js
+│   │   ├── nudged.js
+│   │   ├── pouchdb.min.js
+│   │   ├── compatibility.js
+│   │   ├── polyfill.js
+│   │   └── style.css
+│   └── image/              # Assets
+├── README.md
+└── LICENSE
+```
+
+### 🧩 Core Components
+
+#### 📹 FramesManager
+Handles video frame extraction and storage using PouchDB for efficient caching.
+
+#### 🎯 AnnotatedObjectsTracker
+Manages object tracking across frames using optical flow algorithms.
+
+#### 👁️ OpticalFlow
+Implements Lucas-Kanade optical flow for automatic object tracking.
+
+#### 🎨 Player
+Controls video playback, frame navigation, and annotation rendering.
+
+### 🔄 Data Flow
+```
+Video Input → Frame Extraction → Annotation Creation → Optical Flow Tracking → Export
+```
+
+## 🎨 Customization
+
+### 🎨 Annotation Styling
+```javascript
+// Modify annotation appearance
+ctx.strokeStyle = '#FF0000';  // Red bounding boxes
+ctx.lineWidth = 2;            // 2px border width
+ctx.font = '16px Arial';      // Label font
+ctx.fillStyle = '#FF0000';    // Label color
+```
+
+### ⚙️ Performance Tuning
+```javascript
+// Adjust for better performance
+config.fps = 15;              // Lower FPS for faster processing
+config.playbackRate = 0.2;    // Slower processing for accuracy
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### 🐛 Bug Reports
+- Use GitHub Issues with detailed reproduction steps
+- Include browser version and video file details
+- Attach console logs if applicable
+
+### 🚀 Feature Requests
+- Check existing issues before creating new ones
+- Provide clear use cases and examples
+- Consider performance implications
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **JSFeat** - Computer vision library for optical flow
+- **jQuery/jQuery UI** - User interface components
+- **PouchDB** - Client-side database for frame storage
+- **JSZip** - ZIP file generation and parsing
+- **StreamSaver** - Large file download streaming
+
+## 📞 Support
+
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/username/frameannotate.js/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/username/frameannotate.js/discussions)
+- 📧 **Email**: Open an issue for direct contact
+
+---
+
+<p align="center">
+  <strong>🎬 Happy Annotating! 🎯</strong>
+  <sub>fyi: its improvement of vatic.js , but 9 years younger.</sub>
+</p>  
