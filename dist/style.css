@@ -284,3 +284,182 @@
       .focus-btn:hover {
         background: #F57C00;
       }
+
+      /* Blur Feature Enhanced Styles */
+      .blur-panel {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .blur-panel h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      .blur-panel button {
+        transition: all 0.3s ease;
+        font-family: inherit;
+      }
+
+      .blur-panel button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+
+      .blur-panel button:active {
+        transform: translateY(0);
+      }
+
+      .blur-panel input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .blur-panel input[type="range"]::-webkit-slider-track {
+        background: #ddd;
+        height: 6px;
+        border-radius: 3px;
+      }
+
+      .blur-panel input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        background: #4CAF50;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      .blur-panel input[type="range"]::-moz-range-track {
+        background: #ddd;
+        height: 6px;
+        border-radius: 3px;
+        border: none;
+      }
+
+      .blur-panel input[type="range"]::-moz-range-thumb {
+        background: #4CAF50;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      /* Blur Canvas Styles */
+      #blurCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Blur Step Container Styles */
+      #blurStepContainer {
+        position: relative;
+        overflow: hidden;
+      }
+
+      #blurStepContainer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s ease;
+      }
+
+      #blurStepContainer:hover::before {
+        left: 100%;
+      }
+
+      /* Enhanced Button Styles */
+      #activateBlurFeature:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+      }
+
+      #skipBlurFeature:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
+      }
+
+      /* Animations */
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .blur-panel {
+          padding: 12px;
+          margin: 15px 0;
+        }
+        
+        .blur-panel button {
+          display: block;
+          width: 100%;
+          margin: 8px 0;
+        }
+        
+        #blurStepContainer {
+          margin: 20px 0;
+          padding: 15px;
+        }
+        
+        #blurStepContainer h2 {
+          font-size: 20px;
+        }
+        
+        #activateBlurFeature,
+        #skipBlurFeature {
+          display: block;
+          width: 100%;
+          margin: 10px 0;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .blur-panel {
+          padding: 10px;
+          margin: 10px 0;
+        }
+        
+        .blur-panel h3 {
+          font-size: 18px;
+        }
+        
+        .blur-panel button {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        
+        #blurStepContainer {
+          margin: 15px 0;
+          padding: 12px;
+        }
+      }
