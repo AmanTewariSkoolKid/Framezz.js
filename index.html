@@ -181,72 +181,20 @@
         <!-- The pause button is hidden initially (display: none) and will be shown when video plays -->
         
         <!-- 
-          ENHANCED VIDEO PLAYBACK CONTROLS
-          Professional video player controls with frame-by-frame navigation
+          VIDEO TIMELINE SLIDER
+          This will become a slider (like a volume control) that lets you scrub through
+          the video timeline. Think of it like the progress bar on YouTube that you can
+          click and drag to jump to different parts of the video.
         -->
-        <div id="videoControls" style="margin: 15px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: #f8f8f8;">
-          <h4 style="margin: 0 0 15px 0; color: #333;">Video Playback Controls</h4>
-          
-          <!-- Frame Navigation Buttons -->
-          <div id="frameNavigation" style="margin-bottom: 15px;">
-            <button id="skipToStart" disabled="true" style="margin-right: 5px; padding: 8px 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="Skip to Start">
-              ⏮️ Start
-            </button>
-            <button id="back10Frames" disabled="true" style="margin-right: 5px; padding: 8px 12px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="10 Frames Back">
-              ⏪ -10
-            </button>
-            <button id="back1Frame" disabled="true" style="margin-right: 5px; padding: 8px 12px; background: #FF5722; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="1 Frame Back">
-              ⬅️ -1
-            </button>
-            <button id="playPauseBtn" disabled="true" style="margin-right: 5px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;" title="Play/Pause">
-              ▶️ Play
-            </button>
-            <button id="forward1Frame" disabled="true" style="margin-right: 5px; padding: 8px 12px; background: #FF5722; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="1 Frame Forward">
-              +1 ➡️
-            </button>
-            <button id="forward10Frames" disabled="true" style="margin-right: 5px; padding: 8px 12px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="10 Frames Forward">
-              +10 ⏩
-            </button>
-            <button id="skipToEnd" disabled="true" style="padding: 8px 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="Skip to End">
-              End ⏭️
-            </button>
-          </div>
-          
-          <!-- Timeline Slider with Frame Information -->
-          <div id="timelineContainer" style="margin-bottom: 15px;">
-            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-              <span style="margin-right: 10px; font-weight: bold; color: #555;">Timeline:</span>
-              <span id="currentFrameDisplay" style="margin-right: 10px; padding: 2px 8px; background: #e0e0e0; border-radius: 3px; font-family: monospace;">Frame: 0 / 0</span>
-              <span id="timeDisplay" style="padding: 2px 8px; background: #e0e0e0; border-radius: 3px; font-family: monospace;">00:00.00 / 00:00.00</span>
-            </div>
-            <div id="slider" style="height: 20px; background: #ddd; border-radius: 10px; position: relative; cursor: pointer;"></div>
-          </div>
-          
-          <!-- Playback Speed and Additional Controls -->
-          <div id="playbackSettings" style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px;">
-            <div style="display: flex; align-items: center;">
-              <label for="speed" style="margin-right: 8px; font-weight: bold; color: #555;">Speed:</label>
-              <input type="number" id="speed" value="1.00" step="0.25" min="0.25" max="4.00" style="width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 3px;" />
-              <span style="margin-left: 5px; color: #777; font-size: 12px;">x</span>
-            </div>
-            
-            <div style="display: flex; align-items: center;">
-              <input type="checkbox" id="loopPlayback" style="margin-right: 5px;" />
-              <label for="loopPlayback" style="color: #555;">Loop Playback</label>
-            </div>
-            
-            <div style="display: flex; align-items: center;">
-              <label for="frameStep" style="margin-right: 8px; font-weight: bold; color: #555;">Step Size:</label>
-              <select id="frameStep" style="padding: 4px; border: 1px solid #ccc; border-radius: 3px;">
-                <option value="1">1 frame</option>
-                <option value="5">5 frames</option>
-                <option value="10" selected>10 frames</option>
-                <option value="30">30 frames</option>
-                <option value="60">60 frames</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <div id="slider"></div>
+        
+        <!-- 
+          PLAYBACK SPEED CONTROL
+          This lets you speed up or slow down the video playback.
+          "1.00" means normal speed, "2.00" would be double speed, "0.50" would be half speed.
+          The "size='4'" means the input box will be 4 characters wide.
+        -->
+        <p><label for="speed">Speed multiplier: </label><input type="text" id="speed" value="1.00" size="4" /></p>
         
         <!-- 
           OBJECTS PANEL
@@ -485,14 +433,6 @@
     -->
     <!-- individual annotation management -->
     <script type="text/javascript" src="dist/annotation-manager.js"></script>
-    
-    <!-- 
-      VIDEO PLAYBACK CONTROLLER
-      This provides professional video player controls with frame-by-frame navigation,
-      timeline scrubbing, and playback speed control.
-    -->
-    <!-- video playback controller -->
-    <script type="text/javascript" src="dist/video-controller.js"></script>
     
     <!-- 
       ANNOTATION MANAGEMENT SYSTEM

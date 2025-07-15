@@ -242,12 +242,6 @@
           this.isReady = true;       // Mark the player as ready for use
 
           playButton.disabled = false; // Enable the play button (user can now click it)
-          
-          // Initialize the video controller with frame information
-          const totalFrames = framesManager.frames.totalFrames();
-          if (totalFrames > 0) {
-            initializeVideoController(totalFrames, config.fps);
-          }
         },
 
         /*
@@ -281,9 +275,6 @@
             if (window.annotationManager) {
               window.annotationManager.setCurrentFrame(frameNumber);
             }
-            
-            // Notify video controller of frame change
-            notifyVideoControllerFrameChange(frameNumber);
           }
         },
 
@@ -386,9 +377,6 @@
           // Display the current frame, then set up the next advancement
           this.drawFrame(this.currentFrame).then(() => {
             this.currentFrame++;     // Move to the next frame
-            
-            // Notify video controller of frame change during playback
-            notifyVideoControllerFrameChange(this.currentFrame);
             
             // Calculate delay until next frame based on FPS and speed settings
             // Formula: 1000ms ÷ (fps × speed) = delay in milliseconds
@@ -2656,39 +2644,3 @@
       window.clearAllAnnotatedObjects = clearAllAnnotatedObjects;
       window.addAnnotatedObjectControls = addAnnotatedObjectControls;
       window.player = player;
-      
-      /*
-        VIDEO CONTROLLER INTEGRATION
-        Connect the video controller with the annotation system
-      */
-      function initializeVideoController(totalFrames, frameRate) {
-        if (window.videoController) {
-          window.videoController.initializeVideo(totalFrames, frameRate);
-        }
-      }
-
-      function notifyVideoControllerFrameChange(frameNumber) {
-        if (window.videoController) {
-          window.videoController.notifyFrameChange(frameNumber);
-        }
-      }
-
-      function goToFrame(frameNumber) {
-        // Use the existing player goToFrame function
-        if (player && player.goToFrame) {
-          player.goToFrame(frameNumber);
-        }
-        
-        // Notify the video controller
-        notifyVideoControllerFrameChange(frameNumber);
-        
-        // Update annotation visibility
-        if (window.annotationManager) {
-          window.annotationManager.setCurrentFrame(frameNumber);
-        }
-      }
-
-      // Make integration functions globally accessible
-      window.initializeVideoController = initializeVideoController;
-      window.goToFrame = goToFrame;
-      window.notifyVideoControllerFrameChange = notifyVideoControllerFrameChange;
