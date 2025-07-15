@@ -18,11 +18,14 @@
       The HEAD section is like the "behind the scenes" information about our webpage.
       Users don't see this content directly, but it tells the browser important setup info.
       Think of it like the ingredients list on a recipe - you need to know what's required
-      before you start cooking!
+      before you can start cooking!
     -->
     
     <!-- This tells the browser what kind of text encoding to use (UTF-8 handles most languages) -->
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    
+    <!-- This makes the page responsive on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- This is what appears in the browser tab at the top of the window -->
     <title>framez.js  A pure Javascript video annotation tool</title>
@@ -30,6 +33,75 @@
     <!-- This connects our HTML to a CSS file that makes everything look pretty -->
     <!-- Think of CSS like interior decorating - it makes the basic structure look nice -->
     <link rel="stylesheet" type="text/css" href="dist/style.css" />
+    
+    <!-- Blur Feature CSS -->
+    <style>
+      /* Blur feature button hover effects */
+      #blurFeatureSection button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+
+      #blurFeatureSection button:active {
+        transform: translateY(0);
+      }
+
+      /* Blur intensity slider styling */
+      #blurIntensity {
+        -webkit-appearance: none;
+        appearance: none;
+        background: #ddd;
+        height: 6px;
+        border-radius: 3px;
+        outline: none;
+      }
+
+      #blurIntensity::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: #4CAF50;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      #blurIntensity::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        background: #4CAF50;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+
+      /* Blur overlay canvas */
+      #blurOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Blur feature section responsive design */
+      @media (max-width: 768px) {
+        #blurFeatureSection {
+          padding: 15px !important;
+        }
+        
+        #blurFeatureSection div[style*="display: flex; gap: 10px"] {
+          flex-direction: column;
+        }
+        
+        #blurFeatureSection button {
+          width: 100%;
+          margin-bottom: 5px;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- 
@@ -106,14 +178,127 @@
       </li>
       <li>
         <!-- 
-          STEP 4: OPTIONAL ANNOTATION FILE LOADING
-          This is like importing a rough draft of your homework that you want to finish.
-          Sometimes you might already have some automatic annotations (maybe from AI software)
-          or previous work that you want to continue improving.
+          STEP 3.5: ADD PRIVACY BLUR (OPTIONAL)
+          This optional step allows users to blur sensitive information in the video
+          before proceeding to annotation. It's useful for protecting license plates,
+          faces, documents, or any sensitive objects that should not be visible
+          in the final annotation export.
           
-          XML is a file format (like .txt or .doc) that stores structured data.
-          Think of it like a very organized filing cabinet where information is stored
-          in a specific, predictable way.
+          The blur feature works by allowing users to select rectangular regions
+          on the video that will be blurred. This is completely optional and
+          doesn't interfere with the annotation process.
+        -->
+        <div id="blurFeatureSection" style="
+          margin: 20px 0;
+          padding: 20px;
+          border: 2px solid #4CAF50;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #f0f8f0, #e8f5e8);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          display: none;
+        ">
+          <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <span style="font-size: 32px; margin-right: 15px;">🔒</span>
+            <div>
+              <h4 style="margin: 0 0 5px 0; color: #2e7d32; font-size: 18px;">Privacy Blur Controls</h4>
+              <p style="margin: 0; color: #666; font-size: 14px;">Protect sensitive information before annotation</p>
+            </div>
+          </div>
+          
+          <div style="
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+          ">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #495057; font-weight: 600;">
+              💡 How to use:
+            </p>
+            <ul style="margin: 0; padding-left: 20px; color: #6c757d; font-size: 13px; line-height: 1.4;">
+              <li>Enable blur mode, then click and drag on the video to select areas</li>
+              <li>Adjust blur intensity with the slider</li>
+              <li>Clear regions if you make mistakes</li>
+              <li>Blur will be applied to exported annotations</li>
+            </ul>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+            <button id="toggleBlurMode" onclick="toggleBlurMode()" style="
+              padding: 10px 20px;
+              background: #4CAF50;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 14px;
+              transition: all 0.3s;
+            ">🎯 Enable Blur Mode</button>
+            
+            <button id="clearBlurRegions" onclick="clearAllBlurRegions()" style="
+              padding: 10px 20px;
+              background: #f44336;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 14px;
+              transition: all 0.3s;
+            ">🗑️ Clear All Regions</button>
+            
+            <button id="previewBlur" onclick="toggleBlurPreview()" style="
+              padding: 10px 20px;
+              background: #2196F3;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 14px;
+              transition: all 0.3s;
+            ">👁️ Toggle Preview</button>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <label style="font-weight: bold; color: #555; font-size: 14px;">Blur Intensity:</label>
+            <input type="range" id="blurIntensity" min="1" max="20" value="8" style="flex: 1;" oninput="updateBlurIntensity(this.value)" />
+            <span id="blurIntensityValue" style="
+              background: #4CAF50;
+              color: white;
+              padding: 4px 8px;
+              border-radius: 3px;
+              font-weight: bold;
+              font-size: 12px;
+              min-width: 25px;
+              text-align: center;
+            ">8</span>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+            <span id="blurRegionCount" style="color: #666; font-style: italic;">
+              📊 Active blur regions: <strong id="regionCountValue" style="color: #4CAF50;">0</strong>
+            </span>
+            <span id="blurStatus" style="color: #888;">
+              🔄 Status: <span id="blurStatusText">Ready</span>
+            </span>
+          </div>
+        </div>
+        
+        <p style="margin: 10px 0; color: #666; font-size: 14px;">
+          <strong>Optional:</strong> Add privacy blur to protect sensitive information like license plates or faces before annotation.
+        </p>
+      </li>
+      <li>
+        <!-- 
+          STEP 4: LOAD SAVED ANNOTATIONS (OPTIONAL)
+          This step allows users to load previously saved annotations.
+          It's useful if you want to continue working on an annotation project
+          that you started earlier, or if you received an annotation file from someone else.
+          
+          The loaded annotations will appear in the main annotation interface,
+          and you can edit, delete, or add new annotations as needed.
         -->
         <p>Optional: Load an existing -compatible XML annotation file: <input type="file" id="xmlFile" accept=".xml" disabled="true" /></p>
         <!-- This input is also disabled initially and will be enabled by JavaScript later -->
@@ -133,7 +318,7 @@
       </li>
       <li>
         <!-- 
-          STEP 5: THE MAIN ANNOTATION INTERFACE
+          STEP 5: ANNOTATE THE VIDEO
           This is the heart of the application - where the actual work happens!
           Think of this like the main workspace where you'll spend most of your time,
           similar to how a photo editing program has a main canvas where you do your work.
@@ -278,7 +463,7 @@
       </li>
       <li>
         <!-- 
-          STEP 6: GENERATE XML ANNOTATIONS
+          STEP 6: SAVE WORK & EXPORT
           After you've annotated your video (drawn boxes around objects), this step lets you
           save all that work as an XML file. Think of this like "Save As" in Microsoft Word -
           you're saving your work in a format that other programs can understand and use.
@@ -291,7 +476,7 @@
       </li>
       <li>
         <!-- 
-          STEP 7: EXPORT OPTIONS
+          STEP 7: EXPORT OPTIONS (PREVIOUSLY STEP 8)
           This is like the "final product" section - after you've done all your annotation work,
           these buttons let you create different types of outputs from your work.
           
@@ -441,6 +626,469 @@
     -->
     <!-- annotation handling annotate.js -->
     <script type="text/javascript" src="dist/annotate.js"></script>
+    
+    <!-- Blur Feature Scripts - Load after main application to preserve upload functionality -->
+    <script>
+    // Safe blur feature loading
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait for main app to be completely loaded and stable
+        setTimeout(function() {
+            console.log('Loading blur feature modules safely...');
+            
+            // Function to load scripts safely
+            function loadScriptSafely(src, callback) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.type = 'text/javascript';
+                script.onload = function() {
+                    console.log('✅ Loaded:', src);
+                    if (callback) callback();
+                };
+                script.onerror = function() {
+                    console.warn('⚠️ Failed to load:', src);
+                    if (callback) callback(); // Continue anyway
+                };
+                document.head.appendChild(script);
+            }
+            
+            // Blur feature is now implemented directly in HTML - no external files needed
+            console.log('🎉 Blur feature integrated directly - no external scripts required');
+            
+        }, 3000); // Wait 3 seconds for main app to fully stabilize
+    });
+    </script>
+    
+    <!-- Blur Feature JavaScript Implementation -->
+    <script>
+    // Simple blur feature implementation - Direct and foolproof
+    let blurMode = false;
+    let blurRegions = [];
+    let blurCanvas = null;
+    let blurCtx = null;
+    let originalCanvas = null;
+    let isSelecting = false;
+    let selectionStart = null;
+    let videoElement = null;
+    let blurPreviewVisible = true;
 
+    // Initialize blur feature when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Initializing blur feature...');
+        setTimeout(initializeBlurFeature, 4000); // Wait for main app to load
+    });
+
+    function initializeBlurFeature() {
+        console.log('🔧 Setting up blur feature...');
+        
+        // Show blur feature section
+        const blurSection = document.getElementById('blurFeatureSection');
+        if (blurSection) {
+            blurSection.style.display = 'block';
+            console.log('✅ Blur feature section displayed');
+        }
+        
+        // Get canvas element
+        originalCanvas = document.querySelector('#c') || document.querySelector('canvas');
+        if (!originalCanvas) {
+            console.warn('⚠️ Canvas not found for blur feature');
+            return;
+        }
+        
+        // Get video element
+        videoElement = document.querySelector('video');
+        if (!videoElement) {
+            console.warn('⚠️ Video element not found');
+        }
+        
+        // Create blur overlay canvas
+        blurCanvas = document.createElement('canvas');
+        blurCanvas.id = 'blurOverlay';
+        blurCanvas.className = 'blur-overlay';
+        blurCtx = blurCanvas.getContext('2d');
+        
+        // Insert blur canvas with proper positioning
+        const doodle = document.querySelector('#doodle');
+        if (doodle) {
+            // Ensure doodle container has relative positioning
+            const doodleStyle = getComputedStyle(doodle);
+            if (doodleStyle.position === 'static') {
+                doodle.style.position = 'relative';
+            }
+            doodle.appendChild(blurCanvas);
+            console.log('✅ Blur canvas inserted into doodle container');
+        } else {
+            console.warn('⚠️ Doodle container not found');
+            return;
+        }
+        
+        // Initialize canvas size
+        updateBlurCanvasSize();
+        
+        // Monitor canvas for size changes
+        setupCanvasMonitoring();
+        
+        console.log('✅ Blur feature initialized successfully');
+    }
+
+    function updateBlurCanvasSize() {
+        if (!blurCanvas || !originalCanvas) return;
+        
+        const rect = originalCanvas.getBoundingClientRect();
+        const computedStyle = getComputedStyle(originalCanvas);
+        
+        // Set canvas dimensions
+        blurCanvas.width = originalCanvas.width || rect.width;
+        blurCanvas.height = originalCanvas.height || rect.height;
+        
+        // Set canvas display size
+        blurCanvas.style.width = computedStyle.width || rect.width + 'px';
+        blurCanvas.style.height = computedStyle.height || rect.height + 'px';
+        
+        // Position overlay exactly over original canvas
+        blurCanvas.style.position = 'absolute';
+        blurCanvas.style.top = originalCanvas.offsetTop + 'px';
+        blurCanvas.style.left = originalCanvas.offsetLeft + 'px';
+        
+        console.log('📏 Blur canvas size updated:', blurCanvas.width, 'x', blurCanvas.height);
+    }
+
+    function setupCanvasMonitoring() {
+        // Monitor for canvas size changes
+        const observer = new ResizeObserver(() => {
+            updateBlurCanvasSize();
+            if (blurRegions.length > 0) {
+                redrawBlurRegions();
+            }
+        });
+        
+        if (originalCanvas) {
+            observer.observe(originalCanvas);
+        }
+        
+        // Also monitor for video frame updates
+        if (videoElement) {
+            videoElement.addEventListener('timeupdate', () => {
+                if (blurRegions.length > 0) {
+                    redrawBlurRegions();
+                }
+            });
+        }
+        
+        // Periodic update for smooth tracking
+        setInterval(() => {
+            if (blurRegions.length > 0 && blurPreviewVisible) {
+                redrawBlurRegions();
+            }
+        }, 100);
+    }
+
+    function toggleBlurMode() {
+        blurMode = !blurMode;
+        const button = document.getElementById('toggleBlurMode');
+        const statusText = document.getElementById('blurStatusText');
+        
+        if (blurMode) {
+            button.textContent = '🛑 Disable Blur Mode';
+            button.style.background = '#f44336';
+            statusText.textContent = 'Blur Selection Active';
+            statusText.style.color = '#4CAF50';
+            enableBlurSelection();
+        } else {
+            button.textContent = '🎯 Enable Blur Mode';
+            button.style.background = '#4CAF50';
+            statusText.textContent = 'Ready';
+            statusText.style.color = '#888';
+            disableBlurSelection();
+        }
+        
+        console.log('🔄 Blur mode:', blurMode ? 'ENABLED' : 'DISABLED');
+    }
+
+    function enableBlurSelection() {
+        if (!originalCanvas) return;
+        
+        originalCanvas.style.cursor = 'crosshair';
+        originalCanvas.addEventListener('mousedown', startBlurSelection);
+        originalCanvas.addEventListener('mouseup', endBlurSelection);
+        originalCanvas.addEventListener('mouseleave', cancelBlurSelection);
+        
+        console.log('🎯 Blur selection enabled');
+    }
+
+    function disableBlurSelection() {
+        if (!originalCanvas) return;
+        
+        originalCanvas.style.cursor = 'default';
+        originalCanvas.removeEventListener('mousedown', startBlurSelection);
+        originalCanvas.removeEventListener('mouseup', endBlurSelection);
+        originalCanvas.removeEventListener('mouseleave', cancelBlurSelection);
+        
+        console.log('🛑 Blur selection disabled');
+    }
+
+    function startBlurSelection(e) {
+        if (!blurMode) return;
+        
+        e.preventDefault();
+        isSelecting = true;
+        
+        const rect = originalCanvas.getBoundingClientRect();
+        selectionStart = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+        
+        console.log('🎯 Starting blur selection at:', selectionStart);
+    }
+
+    function endBlurSelection(e) {
+        if (!blurMode || !isSelecting || !selectionStart) return;
+        
+        e.preventDefault();
+        isSelecting = false;
+        
+        const rect = originalCanvas.getBoundingClientRect();
+        const endX = e.clientX - rect.left;
+        const endY = e.clientY - rect.top;
+        
+        // Calculate region
+        const region = {
+            x: Math.min(selectionStart.x, endX),
+            y: Math.min(selectionStart.y, endY),
+            width: Math.abs(endX - selectionStart.x),
+            height: Math.abs(endY - selectionStart.y),
+            intensity: parseInt(document.getElementById('blurIntensity').value || '8'),
+            id: Date.now()
+        };
+        
+        // Only add if region is large enough
+        if (region.width > 10 && region.height > 10) {
+            blurRegions.push(region);
+            updateRegionCount();
+            redrawBlurRegions();
+            console.log('✅ Added blur region:', region);
+        } else {
+            console.log('⚠️ Region too small, not added');
+        }
+        
+        selectionStart = null;
+    }
+
+    function cancelBlurSelection(e) {
+        if (isSelecting) {
+            isSelecting = false;
+            selectionStart = null;
+            console.log('❌ Blur selection cancelled');
+        }
+    }
+
+    function clearAllBlurRegions() {
+        blurRegions = [];
+        updateRegionCount();
+        clearBlurCanvas();
+        console.log('🗑️ All blur regions cleared');
+    }
+
+    function updateRegionCount() {
+        const countElement = document.getElementById('regionCountValue');
+        if (countElement) {
+            countElement.textContent = blurRegions.length;
+        }
+    }
+
+    function clearBlurCanvas() {
+        if (blurCtx && blurCanvas) {
+            blurCtx.clearRect(0, 0, blurCanvas.width, blurCanvas.height);
+        }
+    }
+
+    function redrawBlurRegions() {
+        if (!blurCanvas || !originalCanvas || blurRegions.length === 0) return;
+        
+        try {
+            // Update canvas size first
+            updateBlurCanvasSize();
+            
+            // Clear previous blur
+            clearBlurCanvas();
+            
+            if (!blurPreviewVisible) return;
+            
+            // Get source context
+            const sourceCtx = originalCanvas.getContext('2d');
+            if (!sourceCtx) return;
+            
+            // Apply blur to each region
+            blurRegions.forEach(region => {
+                try {
+                    // Ensure region is within canvas bounds
+                    const clampedRegion = {
+                        x: Math.max(0, Math.min(region.x, blurCanvas.width - 1)),
+                        y: Math.max(0, Math.min(region.y, blurCanvas.height - 1)),
+                        width: Math.max(1, Math.min(region.width, blurCanvas.width - region.x)),
+                        height: Math.max(1, Math.min(region.height, blurCanvas.height - region.y))
+                    };
+                    
+                    // Extract region from source canvas
+                    const imageData = sourceCtx.getImageData(
+                        clampedRegion.x, 
+                        clampedRegion.y, 
+                        clampedRegion.width, 
+                        clampedRegion.height
+                    );
+                    
+                    // Apply blur
+                    const blurredData = applyBoxBlur(imageData, region.intensity);
+                    
+                    // Draw blurred region
+                    blurCtx.putImageData(blurredData, clampedRegion.x, clampedRegion.y);
+                    
+                } catch (error) {
+                    console.warn('⚠️ Error applying blur to region:', error);
+                }
+            });
+            
+        } catch (error) {
+            console.warn('⚠️ Error redrawing blur regions:', error);
+        }
+    }
+
+    function applyBoxBlur(imageData, intensity) {
+        const { data, width, height } = imageData;
+        const output = new Uint8ClampedArray(data);
+        const radius = Math.max(1, Math.floor(intensity / 2));
+        
+        // Horizontal pass
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const index = (y * width + x) * 4;
+                let r = 0, g = 0, b = 0, count = 0;
+                
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const nx = x + dx;
+                    if (nx >= 0 && nx < width) {
+                        const nIndex = (y * width + nx) * 4;
+                        r += data[nIndex];
+                        g += data[nIndex + 1];
+                        b += data[nIndex + 2];
+                        count++;
+                    }
+                }
+                
+                output[index] = r / count;
+                output[index + 1] = g / count;
+                output[index + 2] = b / count;
+                output[index + 3] = data[index + 3];
+            }
+        }
+        
+        // Vertical pass
+        const finalOutput = new Uint8ClampedArray(output);
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const index = (y * width + x) * 4;
+                let r = 0, g = 0, b = 0, count = 0;
+                
+                for (let dy = -radius; dy <= radius; dy++) {
+                    const ny = y + dy;
+                    if (ny >= 0 && ny < height) {
+                        const nIndex = (ny * width + x) * 4;
+                        r += output[nIndex];
+                        g += output[nIndex + 1];
+                        b += output[nIndex + 2];
+                        count++;
+                    }
+                }
+                
+                finalOutput[index] = r / count;
+                finalOutput[index + 1] = g / count;
+                finalOutput[index + 2] = b / count;
+                finalOutput[index + 3] = output[index + 3];
+            }
+        }
+        
+        return new ImageData(finalOutput, width, height);
+    }
+
+    function toggleBlurPreview() {
+        blurPreviewVisible = !blurPreviewVisible;
+        const button = document.getElementById('previewBlur');
+        
+        if (blurPreviewVisible) {
+            blurCanvas.style.opacity = '1';
+            button.textContent = '🙈 Hide Preview';
+            button.style.background = '#FF9800';
+            redrawBlurRegions();
+        } else {
+            blurCanvas.style.opacity = '0';
+            button.textContent = '👁️ Show Preview';
+            button.style.background = '#2196F3';
+        }
+        
+        console.log('👁️ Blur preview:', blurPreviewVisible ? 'VISIBLE' : 'HIDDEN');
+    }
+
+    function updateBlurIntensity(value) {
+        document.getElementById('blurIntensityValue').textContent = value;
+        
+        // Update existing regions
+        blurRegions.forEach(region => {
+            region.intensity = parseInt(value);
+        });
+        
+        // Redraw if there are regions
+        if (blurRegions.length > 0) {
+            redrawBlurRegions();
+        }
+        
+        console.log('🎛️ Blur intensity updated to:', value);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // 'B' key to toggle blur mode
+        if (e.key === 'b' || e.key === 'B') {
+            if (!e.target.matches('input, textarea')) {
+                e.preventDefault();
+                toggleBlurMode();
+            }
+        }
+        
+        // 'C' key to clear blur regions
+        if (e.key === 'c' || e.key === 'C') {
+            if (!e.target.matches('input, textarea') && e.ctrlKey) {
+                e.preventDefault();
+                clearAllBlurRegions();
+            }
+        }
+    });
+
+    // Export blur data function (for future annotation integration)
+    function getBlurData() {
+        return {
+            regions: blurRegions,
+            timestamp: Date.now(),
+            canvasSize: {
+                width: blurCanvas ? blurCanvas.width : 0,
+                height: blurCanvas ? blurCanvas.height : 0
+            }
+        };
+    }
+
+    // Make functions available globally for debugging
+    window.blurFeature = {
+        toggleBlurMode,
+        clearAllBlurRegions,
+        toggleBlurPreview,
+        updateBlurIntensity,
+        getBlurData,
+        regions: () => blurRegions
+    };
+    
+    console.log('🔒 Blur feature JavaScript loaded');
+    </script>
+    
+    <!-- Manual Testing Script -->
+    <script src="dist/blur-manual-tests.js"></script>
   </body>
 </html>
