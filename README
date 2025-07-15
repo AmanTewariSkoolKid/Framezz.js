@@ -22,15 +22,12 @@
 - **👁️ Visibility Toggle** - Show/hide individual annotations
 - **🏷️ Object Labeling** - Name and ID assignment for tracked objects
 - **📤 Dual Export Options** - Export as video or annotated frame ZIP
-- **🔒 Privacy Blur Feature** - Blur sensitive areas like faces, license plates, or personal information
-- **🎯 Optical Flow Tracking** - Automatic tracking of blur regions across frames
 
 ### 🖱️ User Interface
-- **⌨️ Keyboard Shortcuts** - Spacebar (play/pause), N (new annotation), B (blur mode), Arrow keys (frame navigation)
+- **⌨️ Keyboard Shortcuts** - Spacebar (play/pause), N (new annotation), Arrow keys (frame navigation)
 - **🎯 Precision Tools** - Frame-by-frame navigation and zoom support
 - **📱 Responsive Design** - Works on various screen sizes
 - **🎨 Modern UI** - Clean, intuitive interface with jQuery UI components
-- **🔒 Privacy Controls** - Integrated blur feature for sensitive content protection
 
 ## 🛠️ Technical Specifications
 
@@ -90,10 +87,9 @@ cd frameannotate.js/bananananana
 
 ### 3️⃣ Start Annotating
 1. **Upload Video** - Select a video file to extract frames
-2. **Privacy Protection (Optional)** - Use blur feature to hide sensitive areas
-3. **Create Annotations** - Press 'N' and click to create bounding boxes
-4. **Track Objects** - Use optical flow to automatically track objects across frames
-5. **Export Results** - Download as video or ZIP archive
+2. **Create Annotations** - Press 'N' and click to create bounding boxes
+3. **Track Objects** - Use optical flow to automatically track objects across frames
+4. **Export Results** - Download as video or ZIP archive
 
 ## 📖 Usage Guide
 
@@ -120,7 +116,6 @@ cd frameannotate.js/bananananana
 |-----|--------|
 | `Spacebar` | Play/Pause video |
 | `N` | New annotation mode |
-| `B` | Toggle blur mode |
 | `Escape` | Cancel current annotation |
 | `←` / `→` | Previous/Next frame |
 
@@ -131,22 +126,6 @@ cd frameannotate.js/bananananana
 - **Visibility Control**: Toggle individual object visibility
 - **Ground Truth**: Mark annotations as ground truth or tracked
 - **Batch Operations**: Hide all other objects option
-
-### 🔒 Privacy Blur Features
-
-- **Manual Region Selection**: Click and drag to select areas for blurring
-- **Automatic Tracking**: Blur regions follow objects using optical flow
-- **Adjustable Intensity**: Control blur strength from 1-20
-- **Independent Operation**: Works alongside annotations without interference
-- **Export Integration**: Blur effects included in video and frame exports
-- **Real-time Preview**: See blur effects immediately while working
-
-#### 🎨 Blur Workflow
-1. **Enable Blur Mode** - Press 'B' or click "Enable Blur Mode" button
-2. **Select Areas** - Click and drag on video to create blur regions
-3. **Adjust Intensity** - Use slider to control blur strength
-4. **Track Automatically** - Blur regions follow movement across frames
-5. **Export with Blur** - All exports include blur effects
 
 ## 🏗️ Architecture
 
@@ -165,9 +144,6 @@ frameannotate.js/
 │   │   ├── pouchdb.min.js
 │   │   ├── compatibility.js
 │   │   ├── polyfill.js
-│   │   ├── blur-feature.js      # Privacy blur functionality
-│   │   ├── blur-integration.js  # Blur feature integration
-│   │   ├── blur-test.js         # Integration testing (dev only)
 │   │   └── style.css
 │   └── image/              # Assets
 ├── README.md
