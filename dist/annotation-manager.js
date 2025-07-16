@@ -1,59 +1,18 @@
- /*
-  ANNOTATION-MANAGER.JS - INDIVIDUAL ANNOTATION UI MANAGEMENT
+// ANNOTATION-MANAGER.JS - INDIVIDUAL ANNOTATION UI MANAGEMENT
   
-  This file manages the individual annotation cards that show detailed information
-  for each annotation created by the user. Think of it like a detailed inventory
-  system where each annotation gets its own information card.
+//   This file manages the individual annotation cards that show detailed information
+//   for each annotation created by the user. Think of it like a detailed inventory
+//   system where each annotation gets its own information card.
   
-  Features:
-  - Creates dynamic annotation cards with class-colored borders
-  - Manages visibility controls (is visible, hidden checkboxes)
-  - Handles annotation comments and metadata
-  - Provides bulk actions for multiple annotations
-  - Integrates with the existing annotation system
-*/
+//   Features:
+//   - Creates dynamic annotation cards with class-colored borders
+//   - Manages visibility controls (is visible, hidden checkboxes)
+//   - Handles annotation comments and metadata
+//   - Provides bulk actions for multiple annotations
+//   - Integrates with the existing annotation system
+// */
 
 "use strict";
-
-/*
-  Handle annotation deletion (fixes bug)
-*/
-function handleDeleteAnnotation(annotationId) {
-    if (confirm('Are you sure you want to delete this annotation?')) {
-        const annotationData = annotationManager.annotations.get(annotationId);
-        if (!annotationData) {
-            console.error(`Annotation with ID ${annotationId} not found.`);
-            return;
-        }
-
-        // Remove the annotation from the tracker
-        const index = annotatedObjectsTracker.annotatedObjects.findIndex(
-            obj => obj === annotationData.annotatedObject
-        );
-        if (index !== -1) {
-            annotatedObjectsTracker.annotatedObjects.splice(index, 1);
-        }
-
-        // Remove the annotation card from the DOM
-        const cardElement = document.querySelector(`[data-annotation-id="${annotationId}"]`);
-        if (cardElement) {
-            cardElement.remove();
-        }
-
-        // Remove the bounding box from the DOM
-        if (annotationData.annotatedObject.dom) {
-            annotationData.annotatedObject.dom.remove();
-        }
-
-        // Remove the annotation from the manager
-        annotationManager.annotations.delete(annotationId);
-
-        // Update the "no annotations" message
-        annotationManager.updateNoAnnotationsMessage();
-
-        console.log(`Annotation with ID ${annotationId} deleted successfully.`);
-    }
-}
 
 /*
   ANNOTATION MANAGER CLASS
@@ -85,6 +44,29 @@ class AnnotationManager {
     setInterval(() => {
       this.updateAnnotationVisibilityStates();
     }, 100); // Check every 100ms
+
+    this.createAnnotationButton(); // Add the button next to the class dropdown
+  }
+  
+  /*
+    CREATE ANNOTATION BUTTON
+    Creates a button to enable annotation creation mode
+  */
+  createAnnotationButton() {
+    const button = document.createElement('button');
+    button.id = 'createAnnotationButton';
+    button.textContent = 'Create Annotation';
+    button.style.marginLeft = '10px';
+
+    button.addEventListener('click', () => {
+      doodle.style.cursor = 'crosshair';
+      console.log('Annotation creation mode activated');
+    });
+
+    const classDropdown = document.getElementById('annotationClass');
+    if (classDropdown) {
+      classDropdown.parentNode.appendChild(button);
+    }
   }
   
   /*
@@ -367,78 +349,50 @@ class AnnotationManager {
     if (confirm('Are you sure you want to delete this annotation?')) {
       const annotationData = this.annotations.get(annotationId);
       console.log('Deleting annotation:', annotationId, annotationData);
-      
+
       // Remove the actual annotation from the video system
       if (annotationData.annotatedObject && typeof window.annotatedObjectsTracker !== 'undefined') {
-        // Find the index of this annotation in the tracker
         const index = window.annotatedObjectsTracker.annotatedObjects.findIndex(
           obj => obj === annotationData.annotatedObject
         );
-        
-        console.log('Found annotation at index:', index);
-        console.log('Total annotations before deletion:', window.annotatedObjectsTracker.annotatedObjects.length);
-        
+
         if (index !== -1) {
-          // Use the existing clearAnnotatedObject function to properly remove it
-          if (typeof window.clearAnnotatedObject === 'function') {
-            console.log('Using clearAnnotatedObject function');
-            window.clearAnnotatedObject(index);
-            console.log('Total annotations after deletion:', window.annotatedObjectsTracker.annotatedObjects.length);
-          } else {
-            console.log('clearAnnotatedObject not available, using manual cleanup');
-            // Manual cleanup fallback
-            const annotatedObject = annotationData.annotatedObject;
-            
-            try {
-              // Remove UI controls if they exist
-              if (annotatedObject.controls) {
-                console.log('Removing controls:', annotatedObject.controls);
-                if (typeof annotatedObject.controls.remove === 'function') {
-                  annotatedObject.controls.remove();
-                } else if (annotatedObject.controls.parentNode) {
-                  annotatedObject.controls.parentNode.removeChild(annotatedObject.controls);
-                }
-              }
-              
-              // Remove visual bounding box
-              if (annotatedObject.dom) {
-                console.log('Removing DOM element:', annotatedObject.dom);
-                if (typeof $ !== 'undefined') {
-                  $(annotatedObject.dom).remove();
-                } else if (annotatedObject.dom.parentNode) {
-                  annotatedObject.dom.parentNode.removeChild(annotatedObject.dom);
-                }
-              }
-              
-              // Remove from tracker array
-              console.log('Removing from tracker array at index:', index);
-              window.annotatedObjectsTracker.annotatedObjects.splice(index, 1);
-              console.log('Total annotations after manual deletion:', window.annotatedObjectsTracker.annotatedObjects.length);
-              
-            } catch (error) {
-              console.error('Error during manual annotation deletion:', error);
+          const annotatedObject = annotationData.annotatedObject;
+
+          // Remove UI controls if they exist
+          if (annotatedObject.controls) {
+            if (typeof annotatedObject.controls.remove === 'function') {
+              annotatedObject.controls.remove();
+            } else if (annotatedObject.controls.parentNode) {
+              annotatedObject.controls.parentNode.removeChild(annotatedObject.controls);
             }
           }
-        } else {
-          console.warn('Could not find annotation in tracker array');
+
+          // Remove visual bounding box
+          if (annotatedObject.dom) {
+            if (typeof $ !== 'undefined') {
+              $(annotatedObject.dom).remove();
+            } else if (annotatedObject.dom.parentNode) {
+              annotatedObject.dom.parentNode.removeChild(annotatedObject.dom);
+            }
+          }
+
+          // Remove from tracker array
+          window.annotatedObjectsTracker.annotatedObjects.splice(index, 1);
         }
       }
-      
+
       // Remove from our local storage
       this.annotations.delete(annotationId);
-      console.log('Remaining annotations in manager:', this.annotations.size);
-      
+
       // Remove the card from DOM
       const cardElement = document.querySelector(`[data-annotation-id="${annotationId}"]`);
       if (cardElement) {
         cardElement.remove();
-        console.log('Removed annotation card from DOM');
       }
-      
+
       // Update the no annotations message
       this.updateNoAnnotationsMessage();
-      
-      console.log('Annotation deletion complete');
     }
   }
   
@@ -546,72 +500,14 @@ function toggleAllAnnotationsVisibility(visible) {
 function deleteAllAnnotations() {
   if (confirm('Are you sure you want to delete ALL annotations? This cannot be undone.')) {
     console.log('Starting delete all annotations...');
-    
+
     if (window.annotationManager) {
-      // First, use the global clearAllAnnotatedObjects function if available
-      if (typeof window.clearAllAnnotatedObjects === 'function') {
-        console.log('Using clearAllAnnotatedObjects function');
-        window.clearAllAnnotatedObjects();
-      } else {
-        // Fallback: manually clear each annotation
-        console.log('Manual cleanup of all annotations');
-        
-        if (window.annotatedObjectsTracker && window.annotatedObjectsTracker.annotatedObjects) {
-          // Create a copy of the array since we'll be modifying it
-          const annotationsToDelete = [...window.annotatedObjectsTracker.annotatedObjects];
-          
-          annotationsToDelete.forEach((annotatedObject, index) => {
-            try {
-              // Remove UI controls if they exist
-              if (annotatedObject.controls) {
-                console.log('Removing controls for annotation', index);
-                if (typeof annotatedObject.controls.remove === 'function') {
-                  annotatedObject.controls.remove();
-                } else if (annotatedObject.controls.parentNode) {
-                  annotatedObject.controls.parentNode.removeChild(annotatedObject.controls);
-                }
-              }
-              
-              // Remove visual bounding box
-              if (annotatedObject.dom) {
-                console.log('Removing DOM element for annotation', index);
-                if (typeof $ !== 'undefined') {
-                  $(annotatedObject.dom).remove();
-                } else if (annotatedObject.dom.parentNode) {
-                  annotatedObject.dom.parentNode.removeChild(annotatedObject.dom);
-                }
-              }
-            } catch (error) {
-              console.error('Error removing annotation', index, error);
-            }
-          });
-          
-          // Clear the entire array
-          window.annotatedObjectsTracker.annotatedObjects.length = 0;
-        }
-      }
-      
-      // Clear the objects panel manually
-      const objectsPanel = document.getElementById('objects');
-      if (objectsPanel) {
-        console.log('Clearing objects panel');
-        objectsPanel.innerHTML = '';
-      }
-      
-      // Clear all annotations from our manager
-      console.log('Clearing annotation manager storage');
-      window.annotationManager.annotations.clear();
-      
-      // Remove all annotation cards
-      const cards = document.querySelectorAll('.annotation-card');
-      console.log('Removing', cards.length, 'annotation cards');
-      cards.forEach(card => card.remove());
-      
-      // Update message
-      window.annotationManager.updateNoAnnotationsMessage();
-      
-      console.log('Delete all annotations complete');
+      window.annotationManager.annotations.forEach((annotationData, annotationId) => {
+        window.annotationManager.handleDeleteAnnotation(annotationId);
+      });
     }
+
+    console.log('All annotations deleted successfully.');
   }
 }
 

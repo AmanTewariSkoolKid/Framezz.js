@@ -1,4 +1,4 @@
-  /*
+/*
   ANNOTATE.JS - THE VIDEO ANNOTATION USER INTERFACE
   
   This file is like the control panel of our video annotation tool. Think of it like the
@@ -1706,7 +1706,7 @@
         */
         let xml = '<?xml version="1.0" encoding="utf-8"?>\n';  // XML format declaration
         xml += '<annotation>\n';                                // Root element (like book cover)
-        xml += '  <folder>not available</folder>\n';           // Source folder (not applicable here)
+        xml += '  <folder>not available</folder>\n';           // // Source folder (not applicable here)
         xml += '  <filename>not available</filename>\n';       // Source filename (not applicable here)
         xml += '  <source>\n';                                 // Information about data source
         xml += '    <type>video</type>\n';                     // Source type is video
@@ -2063,7 +2063,7 @@
                 record this gap so the system knows the object was hidden.
                 
                 For example, if we processed frame 5 and now we're at frame 10,
-                we need to record that the object was invisible from frame 6 to 9.
+                we need to record that the object is invisible from frame 6 to 9.
               */
               if (lastFrame + 1 != frameNumber) {
                 // Create an "invisible" annotation frame for the gap period
@@ -2155,25 +2155,6 @@
             4. Natural "stop/go" feeling
           */
           player.toogle(); // Note: "toogle" is a typo in original code, should be "toggle"
-        } else if (e.keyCode === 78) { // N KEY - NEW ANNOTATION MODE
-          /*
-            N KEY - ENTER ANNOTATION CREATION MODE
-            
-            Pressing 'N' (for "New") switches the cursor to crosshair mode, indicating
-            the user can now click and drag to create a new bounding box annotation.
-            
-            Why 'N' key?
-            1. 'N' for "New annotation"
-            2. Easy to remember mnemonic
-            3. Left hand position (keeps right hand free for mouse)
-            4. Not used by browser for other functions
-            
-            After pressing 'N', the user can:
-            1. Click once to start drawing a box
-            2. Drag to size the box  
-            3. Click again to finish the box
-          */
-          doodle.style.cursor = 'crosshair'; // Change cursor to indicate annotation mode
         } else if (e.keyCode === 27) { // ESCAPE KEY - CANCEL CURRENT ACTION
           /*
             ESCAPE KEY - THE UNIVERSAL CANCEL KEY
