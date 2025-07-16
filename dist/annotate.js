@@ -1,4 +1,4 @@
-/*
+  /*
   ANNOTATE.JS - THE VIDEO ANNOTATION USER INTERFACE
   
   This file is like the control panel of our video annotation tool. Think of it like the
@@ -89,6 +89,15 @@
       let exportProgressDiv = document.querySelector('#exportProgress');      // Container for export progress display
       let exportProgressBar = document.querySelector('#exportProgressBar');   // Progress bar for export operations
       let exportProgressText = document.querySelector('#exportProgressText'); // Progress text for export operations
+
+      // Advanced playback control buttons
+      let skipToStartButton = document.querySelector('#skipToStart');         // Skip to start button
+      let skip10FramesBackButton = document.querySelector('#skip10FramesBack'); // Skip 10 frames back button
+      let skip1FrameBackButton = document.querySelector('#skip1FrameBack');   // Skip 1 frame back button
+      let playPauseToggleButton = document.querySelector('#playPauseToggle'); // Play/pause toggle button
+      let skip1FrameAheadButton = document.querySelector('#skip1FrameAhead'); // Skip 1 frame ahead button
+      let skip10FramesAheadButton = document.querySelector('#skip10FramesAhead'); // Skip 10 frames ahead button
+      let skipToEndButton = document.querySelector('#skipToEnd');             // Skip to end button
 
       /*
         CORE SYSTEM COMPONENTS - THE ENGINE AND TRACKER
@@ -242,6 +251,15 @@
           this.isReady = true;       // Mark the player as ready for use
 
           playButton.disabled = false; // Enable the play button (user can now click it)
+          
+          // Enable the new playback control buttons (with null checks for safety)
+          if (skipToStartButton) skipToStartButton.disabled = false;
+          if (skip10FramesBackButton) skip10FramesBackButton.disabled = false;
+          if (skip1FrameBackButton) skip1FrameBackButton.disabled = false;
+          if (playPauseToggleButton) playPauseToggleButton.disabled = false;
+          if (skip1FrameAheadButton) skip1FrameAheadButton.disabled = false;
+          if (skip10FramesAheadButton) skip10FramesAheadButton.disabled = false;
+          if (skipToEndButton) skipToEndButton.disabled = false;
         },
 
         /*
@@ -585,6 +603,20 @@
       generateXmlButton.addEventListener('click', generateXml, false);        // When user clicks XML export button
 
       /*
+        ADVANCED PLAYBACK CONTROL EVENT LISTENERS
+        
+        These connect the new playback control buttons to their respective functions
+      */
+      // Add event listeners for the new buttons
+      skipToStartButton.addEventListener('click', skipToStartClicked, false);
+      skip10FramesBackButton.addEventListener('click', skip10FramesBackClicked, false);
+      skip1FrameBackButton.addEventListener('click', skip1FrameBackClicked, false);
+      playPauseToggleButton.addEventListener('click', playPauseToggleClicked, false);
+      skip1FrameAheadButton.addEventListener('click', skip1FrameAheadClicked, false);
+      skip10FramesAheadButton.addEventListener('click', skip10FramesAheadClicked, false);
+      skipToEndButton.addEventListener('click', skipToEndClicked, false);
+
+      /*
         SIMPLE BUTTON CLICK HANDLERS - THE DELEGATION FUNCTIONS
         
         These are simple "wrapper" functions that just call the appropriate player methods.
@@ -603,6 +635,65 @@
 
       function pauseClicked() {
         player.pause();   // Tell the player to pause
+      }
+
+      /*
+        ADVANCED PLAYBACK CONTROL HANDLERS
+        
+        These functions handle the new playback control buttons with frame-specific navigation
+      */
+      function skipToStartClicked() {
+        console.log('Skip to start clicked'); // Debug log
+        if (player && player.seek) {
+          player.seek(0); // Jump to the first frame
+        }
+      }
+
+      function skip10FramesBackClicked() {
+        console.log('Skip 10 frames back clicked, current frame:', player.currentFrame); // Debug log
+        if (player && player.seek && player.currentFrame !== undefined) {
+          const newFrame = Math.max(player.currentFrame - 10, 0);
+          player.seek(newFrame); // Jump 10 frames back, ensuring it doesn't go below 0
+        }
+      }
+
+      function skip1FrameBackClicked() {
+        console.log('Skip 1 frame back clicked, current frame:', player.currentFrame); // Debug log
+        if (player && player.seek && player.currentFrame !== undefined) {
+          const newFrame = Math.max(player.currentFrame - 1, 0);
+          player.seek(newFrame); // Jump 1 frame back, ensuring it doesn't go below 0
+        }
+      }
+
+      function playPauseToggleClicked() {
+        console.log('Play/Pause toggle clicked'); // Debug log
+        if (player && player.toogle) {
+          player.toogle(); // Toggle between play and pause (note: keeping original typo)
+        }
+      }
+
+      function skip1FrameAheadClicked() {
+        console.log('Skip 1 frame ahead clicked, current frame:', player.currentFrame); // Debug log
+        if (player && player.seek && player.currentFrame !== undefined && framesManager && framesManager.frames) {
+          const newFrame = Math.min(player.currentFrame + 1, framesManager.frames.totalFrames() - 1);
+          player.seek(newFrame); // Jump 1 frame ahead, ensuring it doesn't go beyond last frame
+        }
+      }
+
+      function skip10FramesAheadClicked() {
+        console.log('Skip 10 frames ahead clicked, current frame:', player.currentFrame); // Debug log
+        if (player && player.seek && player.currentFrame !== undefined && framesManager && framesManager.frames) {
+          const newFrame = Math.min(player.currentFrame + 10, framesManager.frames.totalFrames() - 1);
+          player.seek(newFrame); // Jump 10 frames ahead, ensuring it doesn't go beyond last frame
+        }
+      }
+
+      function skipToEndClicked() {
+        console.log('Skip to end clicked'); // Debug log
+        if (player && player.seek && framesManager && framesManager.frames) {
+          const lastFrame = framesManager.frames.totalFrames() - 1;
+          player.seek(lastFrame); // Jump to the last frame
+        }
       }
 
       /*
@@ -927,6 +1018,15 @@
                 generateXmlButton.disabled = false;      // Allow XML export
                 exportVideoButton.disabled = false;      // Allow video export
                 exportAnnotatedZipButton.disabled = false; // Allow annotated ZIP export
+                
+                // Enable the new playback control buttons (with null checks for safety)
+                if (skipToStartButton) skipToStartButton.disabled = false;
+                if (skip10FramesBackButton) skip10FramesBackButton.disabled = false;
+                if (skip1FrameBackButton) skip1FrameBackButton.disabled = false;
+                if (playPauseToggleButton) playPauseToggleButton.disabled = false;
+                if (skip1FrameAheadButton) skip1FrameAheadButton.disabled = false;
+                if (skip10FramesAheadButton) skip10FramesAheadButton.disabled = false;
+                if (skipToEndButton) skipToEndButton.disabled = false;
               });
             });
           }

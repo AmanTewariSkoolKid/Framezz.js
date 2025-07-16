@@ -1,4 +1,4 @@
-/*
+ /*
   ANNOTATION-MANAGER.JS - INDIVIDUAL ANNOTATION UI MANAGEMENT
   
   This file manages the individual annotation cards that show detailed information
@@ -14,6 +14,46 @@
 */
 
 "use strict";
+
+/*
+  Handle annotation deletion (fixes bug)
+*/
+function handleDeleteAnnotation(annotationId) {
+    if (confirm('Are you sure you want to delete this annotation?')) {
+        const annotationData = annotationManager.annotations.get(annotationId);
+        if (!annotationData) {
+            console.error(`Annotation with ID ${annotationId} not found.`);
+            return;
+        }
+
+        // Remove the annotation from the tracker
+        const index = annotatedObjectsTracker.annotatedObjects.findIndex(
+            obj => obj === annotationData.annotatedObject
+        );
+        if (index !== -1) {
+            annotatedObjectsTracker.annotatedObjects.splice(index, 1);
+        }
+
+        // Remove the annotation card from the DOM
+        const cardElement = document.querySelector(`[data-annotation-id="${annotationId}"]`);
+        if (cardElement) {
+            cardElement.remove();
+        }
+
+        // Remove the bounding box from the DOM
+        if (annotationData.annotatedObject.dom) {
+            annotationData.annotatedObject.dom.remove();
+        }
+
+        // Remove the annotation from the manager
+        annotationManager.annotations.delete(annotationId);
+
+        // Update the "no annotations" message
+        annotationManager.updateNoAnnotationsMessage();
+
+        console.log(`Annotation with ID ${annotationId} deleted successfully.`);
+    }
+}
 
 /*
   ANNOTATION MANAGER CLASS
