@@ -61,7 +61,7 @@ python -m http.server 8000
 
 ## 🎯 Live Demo
 
-**Try it now:** [https://yourusername.github.io/frameannotate.js](https://yourusername.github.io/frameannotate.js)
+**Try it now:** [https://AmanTewariSkoolKid.github.io/frameannotate.js](https://AmanTewariSkoolKid.github.io/frameannotate.js)
 
 *No signup required - works directly in your browser with your local video files*
 
